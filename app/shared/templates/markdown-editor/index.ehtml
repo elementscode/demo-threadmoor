@@ -1,0 +1,79 @@
+import "./style.css";
+import { File, raw } from "@elements/app";
+import { renderMarkdown } from "#app/shared/services/markdown";
+import { uploadImages } from "#app/shared/services/media";
+
+export interface Draft {
+  body: string;
+  preview: boolean;
+  uploading: boolean;
+  error: string;
+}
+
+export function emptyDraft(): Draft {
+  return { body: "", preview: false, uploading: false, error: "" };
+}
+
+function onPickImages(e: Event, draft: Draft) {
+  let input = e.target as HTMLInputElement;
+
+  draft.uploading = true;
+  draft.error = "";
+
+  try {
+    let files = File.read(input);
+    let markdown = uploadImages({ files });
+    let gap = draft.body.trim().length > 0 ? "\n\n" : "";
+
+    draft.body = draft.body.trimEnd() + gap + markdown + "\n";
+    draft.preview = false;
+  } catch (err: any) {
+    draft.error = err.message;
+  }
+
+  input.value = "";
+  draft.uploading = false;
+}
+
+<MarkdownEditor (
+  draft: Draft,
+  id: string,
+  label: string,
+  placeholder: string = "Markdown works here.",
+  tall: boolean = false,
+)>
+  <div class={["md-editor stack is-sm", tall && "is-tall"]}>
+    <div class="md-editor-head row">
+      <label for={id}><strong>{label}</strong></label>
+      <div class="tab-list">
+        <button type="button" class={["tab", !draft.preview && "is-active"]} onclick={() => draft.preview = false}>Write</button>
+        <button type="button" class={["tab", draft.preview && "is-active"]} onclick={() => draft.preview = true}>Preview</button>
+      </div>
+    </div>
+
+    <slot name="above"></slot>
+
+    <div e:if={draft.preview} class="md-editor-preview prose">
+      {raw(draft.body.trim() ? renderMarkdown(draft.body) : "<p>Nothing to preview yet.</p>")}
+    </div>
+    <textarea e:else id={id} value={draft.body} placeholder={placeholder}></textarea>
+
+    <div e:if={draft.error} class="callout is-danger" role="alert">
+      <div class="callout-body">{draft.error}</div>
+    </div>
+
+    <div class="md-editor-foot row">
+      <div class="row" style="gap: var(--space-3)">
+        <label class={["button is-sm file-button", draft.uploading && "is-loading"]}>
+          <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M2 3.5h12v9H2zM2 10l3.5-3.5 3 3 2-2L14 11" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          </svg>
+          {draft.uploading ? "Uploading…" : "Add images"}
+          <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple onchange={(e) => onPickImages(e, draft)}>
+        </label>
+        <span class="md-editor-hint">**bold**, _italic_, &gt; quote, - lists, ![alt](url)</span>
+      </div>
+      <slot/>
+    </div>
+  </div>
+</MarkdownEditor>

@@ -1,0 +1,66 @@
+@import "#app/shared/styles/page.css";
+
+.settings-shell {
+  max-width: 46rem;
+}
+
+.settings-shell h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  letter-spacing: -0.02em;
+}
+
+.settings-avatar {
+  gap: var(--space-5);
+}
+
+.settings-avatar .hint {
+  margin: var(--space-1) 0 0;
+}
+
+.follow-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.follow-item {
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.follow-item + .follow-item {
+  border-top: 1px solid var(--rule-soft);
+}
+
+.follow-item a {
+  min-width: 0;
+  color: var(--ink);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+
+.follow-item a:hover {
+  color: var(--accent-deep);
+}
+
+.follow-item small {
+  display: block;
+  color: var(--ink-dim);
+  font-weight: var(--weight-regular);
+}
+
+.file-button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}

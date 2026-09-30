@@ -1,0 +1,122 @@
+.topic-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-surface, var(--radius-lg));
+  overflow: hidden;
+}
+
+.topic-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-4);
+  align-items: start;
+  padding: var(--space-4) var(--space-5);
+}
+
+.topic-item + .topic-item {
+  border-top: 1px solid var(--rule-soft);
+}
+
+.topic-item.is-new {
+  animation: topic-arrive 1.6s ease-out;
+}
+
+@keyframes topic-arrive {
+  from {
+    background: var(--accent-soft);
+  }
+
+  to {
+    background: transparent;
+  }
+}
+
+.topic-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.topic-title {
+  color: var(--ink);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  text-decoration: none;
+}
+
+.topic-title:hover {
+  color: var(--accent-deep);
+}
+
+.topic-flag {
+  display: inline-block;
+  margin-right: var(--space-1);
+  vertical-align: -2px;
+  color: var(--ink-dim);
+}
+
+.topic-excerpt {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.topic-meta {
+  color: var(--ink-dim);
+  font-size: var(--text-xs);
+}
+
+.topic-meta a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.topic-meta a:hover {
+  color: var(--ink);
+}
+
+.topic-stats {
+  display: flex;
+  gap: var(--space-4);
+  color: var(--ink-dim);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.topic-stat strong {
+  display: block;
+  color: var(--ink);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.topic-stat.is-zero strong {
+  color: var(--ink-dim);
+}
+
+@media (max-width: 40rem) {
+  .topic-item {
+    grid-template-columns: auto 1fr;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .topic-stats {
+    grid-column: 2;
+    gap: var(--space-3);
+  }
+
+  .topic-stat strong {
+    display: inline;
+    margin-right: var(--space-1);
+    font-size: var(--text-sm);
+  }
+}

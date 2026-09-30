@@ -1,0 +1,167 @@
+import "./style.css";
+import { sql, tx, session, redirect, ValidationError } from "@elements/app";
+import { Chrome, Category } from "#app/shared/services/forum";
+import { plainText } from "#app/shared/services/markdown";
+import { Layout } from "#app/shared/templates/layout";
+import { MarkdownEditor, Draft } from "#app/shared/templates/markdown-editor";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+
+export const MAX_TITLE = 140;
+
+export interface NewTopic {
+  categoryId: string;
+  title: string;
+  body: string;
+}
+
+interface Form extends Draft {
+  categoryId: string;
+  title: string;
+  titleError: string;
+  busy: boolean;
+}
+
+/**
+ * Starts a topic: the topic row, its opening post, and a follow for the
+ * author, in one transaction. The topicsNotify trigger puts it at the top of
+ * every open list once it commits.
+ * @rpc
+ */
+export function createTopic(input: NewTopic): string {
+  session.isLoggedInOrThrow();
+
+  let userId = session.getOrThrow("userId");
+  let title = input.title.trim().replace(/\s+/g, " ");
+  let body = input.body.trim();
+  let errors: Record<string, string[]> = {};
+
+  if (title.length < 4) {
+    errors.title = ["give it a title of at least 4 characters"];
+  } else if (title.length > MAX_TITLE) {
+    errors.title = [`keep the title under ${MAX_TITLE} characters`];
+  }
+
+  if (body.length === 0) {
+    errors.body = ["say a little more in the post"];
+  }
+
+  if (sql(`select 1 from categories where id = ${input.categoryId}`).empty()) {
+    errors.categoryId = ["pick a category"];
+  }
+
+  if (Object.keys(errors).length > 0) {
+    throw new ValidationError(errors);
+  }
+
+  return tx(() => {
+    let topic = sql<{ id: string }>(`
+      insert into topics (categoryId, userId, title, excerpt)
+           values (${input.categoryId}, ${userId}, ${title}, ${plainText(body)})
+        returning id
+    `).firstOrThrow();
+
+    sql(`
+      insert into posts (topicId, userId, body, isFirst)
+           values (${topic.id}, ${userId}, ${body}, true)
+    `);
+
+    sql(`insert into follows (topicId, userId) values (${topic.id}, ${userId})`);
+
+    return topic.id;
+  });
+}
+
+function onSubmit(form: Form) {
+  form.busy = true;
+  form.titleError = "";
+  form.error = "";
+
+  try {
+    let id = createTopic({ categoryId: form.categoryId, title: form.title, body: form.body });
+    redirect(`/t/${id}`);
+  } catch (err: any) {
+    if (err instanceof ValidationError && typeof err.errors === "object") {
+      let errors = err.errors as Record<string, string[]>;
+
+      form.titleError = errors.title?.[0] ?? "";
+      form.error = errors.body?.[0] ?? errors.categoryId?.[0] ?? "";
+    } else {
+      form.error = err.message;
+    }
+
+    form.busy = false;
+  }
+}
+
+<html lang="en" class="page-new-topic" (
+  chrome: Chrome,
+  initialCategory: Category,
+  private form: Form = {
+    categoryId: initialCategory.id,
+    title: "",
+    titleError: "",
+    body: "",
+    preview: false,
+    uploading: false,
+    error: "",
+    busy: false,
+  },
+)>
+  <head>
+    <title>New topic · threadmoor</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout chrome={chrome}>
+      <div class="page-shell new-topic-shell">
+        <form class="stack is-lg" onsubmit={() => onSubmit(form)}>
+          <div class="stack is-xs">
+            <p class="eyebrow">New topic</p>
+            <h1>Start a conversation</h1>
+          </div>
+
+          <fieldset class="stack is-sm" style="border: 0; padding: 0; margin: 0">
+            <legend style="padding: 0; margin-bottom: var(--space-2)"><strong>Category</strong></legend>
+            <div class="new-topic-cats">
+              <button e:for={c of chrome.categories}
+                      type="button"
+                      class={["new-topic-cat", form.categoryId === c.id && "is-active"]}
+                      aria-pressed={form.categoryId === c.id ? "true" : "false"}
+                      style={`--cat-h: ${c.hue}`}
+                      onclick={() => form.categoryId = c.id}>
+                <strong><span class="cat-dot"></span>{c.name}</strong>
+                <span class="line-clamp-2">{c.description}</span>
+              </button>
+            </div>
+          </fieldset>
+
+          <div class="field new-topic-title">
+            <label for="title">Title</label>
+            <input id="title"
+                   value={form.title}
+                   class={[form.titleError && "is-error"]}
+                   maxlength={MAX_TITLE}
+                   placeholder="What are you making, or what's got you stuck?"
+                   required>
+            <p e:if={form.titleError} class="field-error" style="color: var(--danger-ink); margin: 0; font-size: var(--text-xs)">{form.titleError}</p>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <MarkdownEditor draft={form}
+                              id="body"
+                              label="Post"
+                              tall={true}
+                              placeholder="Describe the project or the problem. Add photos: a picture of the joint beats a paragraph about it.">
+                <div class="row" style="gap: var(--space-2)">
+                  <a class="button is-ghost" href="/">Cancel</a>
+                  <button type="submit" class={["is-primary", form.busy && "is-loading"]} disabled={form.uploading}>Post topic</button>
+                </div>
+              </MarkdownEditor>
+            </div>
+          </div>
+        </form>
+      </div>
+    </Layout>
+  </body>
+</html>

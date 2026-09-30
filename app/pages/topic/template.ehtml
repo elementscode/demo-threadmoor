@@ -1,0 +1,396 @@
+import "./style.css";
+import { LiveView, raw, redirect } from "@elements/app";
+import { Chrome, Me } from "#app/shared/services/forum";
+import { renderMarkdown, plainText } from "#app/shared/services/markdown";
+import { timeAgo, fullDate, plural } from "#app/shared/services/format";
+import { Layout } from "#app/shared/templates/layout";
+import { Avatar } from "#app/shared/templates/avatar";
+import { MarkdownEditor, Draft } from "#app/shared/templates/markdown-editor";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import {
+  PostRow,
+  PostLike,
+  TopicDetail,
+  SolutionSummary,
+  setFollow,
+  setPinned,
+  setLocked,
+  moveTopic,
+} from "./services";
+
+interface Composer extends Draft {
+  quote: PostRow | null;
+}
+
+interface TopicState {
+  following: boolean;
+  moveTo: string;
+  error: string;
+}
+
+function emptyComposer(composer: Composer) {
+  composer.body = "";
+  composer.quote = null;
+  composer.preview = false;
+  composer.error = "";
+}
+
+function onReply(composer: Composer, posts: LiveView<PostRow>, me: Me, state: TopicState) {
+  if (composer.body.trim().length === 0) {
+    composer.error = "Write something first.";
+    return;
+  }
+
+  // New replies land at the end, so load the rest of the topic first and the
+  // reply appears where it belongs, under the last one.
+  while (posts.hasMore) {
+    posts.more();
+  }
+
+  let quote = composer.quote;
+
+  try {
+    posts.insert({
+      body: composer.body,
+      userId: me.id,
+      isFirst: false,
+      isSolution: false,
+      hidden: false,
+      createdAt: new Date(),
+      quotePostId: quote?.id ?? null,
+      authorHandle: me.handle,
+      authorName: me.displayName || me.handle,
+      authorAvatar: me.avatar,
+      authorIsModerator: me.isModerator,
+      quoteHandle: quote?.authorHandle ?? null,
+      quoteExcerpt: quote ? quote.body.slice(0, 400) : null,
+    }, () => emptyComposer(composer));
+
+    state.following = true;
+  } catch (err: any) {
+    composer.error = err.message;
+  }
+}
+
+function onQuote(composer: Composer, post: PostRow) {
+  composer.quote = post;
+  composer.preview = false;
+
+  let box = document.getElementById("reply-body") as HTMLTextAreaElement | null;
+
+  box?.scrollIntoView({ behavior: "smooth", block: "center" });
+  box?.focus({ preventScroll: true });
+}
+
+function likesFor(likes: LiveView<PostLike>, postId: string): number {
+  return likes.filter((l) => l.postId === postId).length;
+}
+
+function myLike(likes: LiveView<PostLike>, postId: string, me: Me | null): PostLike | undefined {
+  if (!me) {
+    return undefined;
+  }
+
+  return likes.find((l) => l.postId === postId && l.userId === me.id);
+}
+
+function onLike(likes: LiveView<PostLike>, post: PostRow, me: Me | null) {
+  if (!me) {
+    redirect(`/signin?next=/t/${post.topicId}`);
+    return;
+  }
+
+  let mine = myLike(likes, post.id, me);
+
+  if (mine) {
+    likes.delete(mine);
+  } else {
+    likes.insert({ postId: post.id, userId: me.id });
+  }
+}
+
+function onToggleSolution(posts: LiveView<PostRow>, post: PostRow, state: TopicState) {
+  try {
+    posts.update({ ...post, isSolution: !post.isSolution });
+  } catch (err: any) {
+    state.error = err.message;
+  }
+}
+
+function onToggleHidden(posts: LiveView<PostRow>, post: PostRow, state: TopicState) {
+  try {
+    posts.update({ ...post, hidden: !post.hidden });
+  } catch (err: any) {
+    state.error = err.message;
+  }
+}
+
+function onFollow(state: TopicState, topicId: string) {
+  try {
+    state.following = setFollow(topicId, !state.following);
+  } catch (err: any) {
+    state.error = err.message;
+  }
+}
+
+function onPin(topic: TopicDetail) {
+  topic.pinned = setPinned(topic.id, !topic.pinned);
+}
+
+function onLock(topic: TopicDetail) {
+  topic.locked = setLocked(topic.id, !topic.locked);
+}
+
+function onMove(topic: TopicDetail, state: TopicState) {
+  if (!state.moveTo || state.moveTo === topic.categoryId) {
+    return;
+  }
+
+  let moved = moveTopic(topic.id, state.moveTo);
+
+  topic.categoryId = moved.categoryId;
+  topic.categorySlug = moved.categorySlug;
+  topic.categoryName = moved.categoryName;
+  topic.categoryHue = moved.categoryHue;
+  topic.allowsSolutions = moved.allowsSolutions;
+}
+
+function onSentinelInsert(el: HTMLElement, posts: LiveView<PostRow>) {
+  let observer = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting) {
+      posts.more();
+    }
+  }, { rootMargin: "600px" });
+
+  observer.observe(el);
+}
+
+function currentSolution(posts: LiveView<PostRow>, initial: SolutionSummary | null): SolutionSummary | null {
+  let marked = posts.find((p) => p.isSolution);
+
+  if (marked) {
+    return { id: marked.id, handle: marked.authorHandle, excerpt: plainText(marked.body, 280) };
+  }
+
+  if (initial && !posts.get(initial.id)) {
+    return initial;
+  }
+
+  return null;
+}
+
+function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
+  if (!me || !topic.allowsSolutions || post.isFirst || post.hidden) {
+    return false;
+  }
+
+  return me.id === topic.userId || me.isModerator;
+}
+
+<PostItem (
+  post: PostRow,
+  topic: TopicDetail,
+  posts: LiveView<PostRow>,
+  likes: LiveView<PostLike>,
+  me: Me | null,
+  composer: Composer,
+  state: TopicState,
+  loadedAt: Date,
+)>
+  <li id={`post-${post.id}`}
+      class={[
+        "post",
+        post.isSolution && "is-solution",
+        +new Date(post.createdAt) > +loadedAt && post.userId !== me?.id && "is-arrived",
+      ]}>
+    <a class="post-side" href={`/u/${post.authorHandle}`} tabindex={-1} aria-hidden="true">
+      <Avatar src={post.authorAvatar} name={post.authorHandle} size="lg" />
+    </a>
+
+    <div class="post-main">
+      <div class="post-head">
+        <span class="avatar-inline"><Avatar src={post.authorAvatar} name={post.authorHandle} size="xs" /></span>
+        <a class="post-author" href={`/u/${post.authorHandle}`}>{post.authorName}</a>
+        <span class="post-handle">@{post.authorHandle}</span>
+        <span e:if={post.authorIsModerator} class="pill is-accent">Moderator</span>
+        <span e:if={post.isSolution} class="pill is-success">Solution</span>
+        <a class="post-time" href={`#post-${post.id}`} title={fullDate(post.createdAt)}>{timeAgo(post.createdAt)}</a>
+      </div>
+
+      <blockquote e:if={post.quotePostId && post.quoteHandle} class="post-quote">
+        <a href={`#post-${post.quotePostId}`}>@{post.quoteHandle} wrote</a>
+        <p class="line-clamp-3">{post.quoteExcerpt ?? "This post was hidden."}</p>
+      </blockquote>
+
+      <p e:if={post.hidden} class="post-hidden">This post was hidden by a moderator.</p>
+      <div e:else class="prose post-body">{raw(renderMarkdown(post.body))}</div>
+
+      <div class="post-actions cluster">
+        <button class={["is-ghost is-sm", myLike(likes, post.id, me) && "is-liked"]}
+                disabled={me?.id === post.userId}
+                title={me?.id === post.userId ? "Your post" : "Like"}
+                aria-pressed={myLike(likes, post.id, me) ? "true" : "false"}
+                onclick={() => onLike(likes, post, me)}>
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 14s-5.5-3.3-5.5-7.4A3 3 0 0 1 8 4.4a3 3 0 0 1 5.5 2.2C13.5 10.7 8 14 8 14z"
+                  fill={myLike(likes, post.id, me) ? "currentColor" : "none"}
+                  stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          </svg>
+          <span class="like-count">{likesFor(likes, post.id) > 0 ? likesFor(likes, post.id) : "Like"}</span>
+        </button>
+
+        <button e:if={me && !post.hidden && (!topic.locked || me!.isModerator)}
+                class="is-ghost is-sm"
+                onclick={() => onQuote(composer, post)}>
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M3 9.5c0-3 1.5-5 4-5.5v1.6C5.7 6 5 7 5 8h2v4H3zm6 0c0-3 1.5-5 4-5.5v1.6c-1.3.4-2 1.4-2 2.4h2v4H9z" fill="currentColor"/>
+          </svg>
+          Quote
+        </button>
+
+        <button e:if={canSolve(topic, post, me)}
+                class={["is-ghost is-sm", post.isSolution && "is-solution-on"]}
+                onclick={() => onToggleSolution(posts, post, state)}>
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <path d="m5.2 8.2 2 2 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {post.isSolution ? "Unmark solution" : "Mark as solution"}
+        </button>
+
+        <button e:if={me?.isModerator}
+                class="is-ghost is-sm"
+                onclick={() => onToggleHidden(posts, post, state)}>
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="8" cy="8" r="2" fill="currentColor"/>
+            <path e:if={!post.hidden} d="m2.5 13.5 11-11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          {post.hidden ? "Unhide" : "Hide"}
+        </button>
+      </div>
+    </div>
+  </li>
+</PostItem>
+
+<html lang="en" class="page-topic" (
+  chrome: Chrome,
+  topic: TopicDetail,
+  posts: LiveView<PostRow>,
+  likes: LiveView<PostLike>,
+  solution: SolutionSummary | null,
+  following: boolean,
+  loadedAt: Date,
+  private state: TopicState = { following, moveTo: topic.categoryId, error: "" },
+  private composer: Composer = { body: "", quote: null, preview: false, uploading: false, error: "" },
+)>
+  <head>
+    <title>{topic.title} · threadmoor</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout chrome={chrome} active={topic.categorySlug}>
+      <div class="page-shell topic-shell">
+        <div class="stack is-lg">
+          <header class="topic-header stack is-sm">
+            <div class="topic-crumbs cluster is-xs">
+              <a class="cat-chip" href={`/c/${topic.categorySlug}`} style={`--cat-h: ${topic.categoryHue}`}>
+                <span class="cat-dot"></span>
+                {topic.categoryName}
+              </a>
+              <span e:if={topic.pinned} class="pill">Pinned</span>
+              <span e:if={topic.locked} class="pill is-warning">Locked</span>
+            </div>
+
+            <h1>{topic.title}</h1>
+
+            <div class="topic-facts cluster is-sm">
+              <span>Started by <a href={`/u/${topic.authorHandle}`}>{topic.authorHandle}</a> {timeAgo(topic.createdAt)}</span>
+              <span>·</span>
+              <span>{plural(Math.max(posts.length - 1, topic.replyCount), "reply", "replies")}</span>
+              <span>·</span>
+              <span>{plural(likes.length, "like")}</span>
+            </div>
+          </header>
+
+          <div e:if={chrome.me} class="topic-tools row">
+            <div class="row" style="gap: var(--space-3)">
+              <button class={[state.following ? "is-primary" : "", "is-sm"]}
+                      aria-pressed={state.following ? "true" : "false"}
+                      onclick={() => onFollow(state, topic.id)}>
+                <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M8 1.8a4.2 4.2 0 0 0-4.2 4.2v2.6L2.5 11h11l-1.3-2.4V6A4.2 4.2 0 0 0 8 1.8zM6.3 12.5a1.8 1.8 0 0 0 3.4 0z" fill="currentColor"/>
+                </svg>
+                {state.following ? "Following" : "Follow"}
+              </button>
+              <p class="hint">{state.following ? "New replies come in your daily digest." : "Follow to get new replies in a daily digest."}</p>
+            </div>
+
+            <div e:if={chrome.me!.isModerator} class="cluster is-xs">
+              <button class="is-sm" onclick={() => onPin(topic)}>{topic.pinned ? "Unpin" : "Pin"}</button>
+              <button class="is-sm" onclick={() => onLock(topic)}>{topic.locked ? "Unlock" : "Lock"}</button>
+              <select class="is-sm" value={state.moveTo} onchange={() => onMove(topic, state)} aria-label="Move to category">
+                <option e:for={c of chrome.categories} value={c.id}>{c.id === topic.categoryId ? `In ${c.name}` : `Move to ${c.name}`}</option>
+              </select>
+            </div>
+          </div>
+
+          <div e:if={state.error} class="callout is-danger" role="alert">
+            <div class="callout-body">{state.error}</div>
+          </div>
+
+          <a e:if={currentSolution(posts, solution)}
+             class="topic-solved callout is-success"
+             href={`#post-${currentSolution(posts, solution)!.id}`}>
+            <div class="callout-title">Solved by @{currentSolution(posts, solution)!.handle}</div>
+            <div class="callout-body"><p class="line-clamp-2">{currentSolution(posts, solution)!.excerpt}</p></div>
+          </a>
+
+          <ul class="posts">
+            <PostItem e:for={p of posts}
+                      post={p}
+                      topic={topic}
+                      posts={posts}
+                      likes={likes}
+                      me={chrome.me}
+                      composer={composer}
+                      state={state}
+                      loadedAt={loadedAt} />
+            <li e:if={posts.hasMore}
+                class="posts-more"
+                oninsert={(e) => onSentinelInsert(e.target as HTMLElement, posts)}>
+              Loading more replies…
+            </li>
+          </ul>
+
+          <div e:if={!chrome.me} class="card">
+            <div class="card-body row" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-3)">
+              <span>Sign in to reply, like posts and follow this topic.</span>
+              <a class="button is-primary" href={`/signin?next=/t/${topic.id}`}>Sign in to reply</a>
+            </div>
+          </div>
+
+          <div e:elseif={topic.locked && !chrome.me!.isModerator} class="callout is-warning">
+            <div class="callout-title">This topic is locked</div>
+            <div class="callout-body">A moderator closed it to new replies.</div>
+          </div>
+
+          <form e:else id="reply" class="card composer" onsubmit={() => onReply(composer, posts, chrome.me!, state)}>
+            <div class="card-body">
+              <MarkdownEditor draft={composer}
+                              id="reply-body"
+                              label="Reply"
+                              placeholder="Share what worked, ask a follow-up, post a photo. Markdown works.">
+                <div slot="above" e:if={composer.quote} class="composer-quoting row">
+                  <span class="line-clamp-1">Quoting @{composer.quote!.authorHandle}: <em>{composer.quote!.body.slice(0, 120)}</em></span>
+                  <button type="button" class="is-ghost is-sm" onclick={() => composer.quote = null}>Remove</button>
+                </div>
+                <button type="submit" class="is-primary" disabled={composer.uploading}>Post reply</button>
+              </MarkdownEditor>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>
