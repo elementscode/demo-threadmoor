@@ -1,0 +1,155 @@
+import "./style.css";
+import { LiveView } from "@elements/app";
+import { Chrome, Category } from "#app/shared/services/forum";
+import { TopicRow } from "#app/shared/services/topics";
+import { Layout } from "#app/shared/templates/layout";
+import { TopicItem } from "#app/shared/templates/topic-item";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+
+export type Tab = "latest" | "top" | "unanswered";
+
+function tabHref(category: Category | null, tab: Tab): string {
+  let base = category ? `/c/${category.slug}` : "";
+
+  if (tab === "latest") {
+    return base || "/";
+  }
+
+  return `${base}/${tab}`;
+}
+
+function rows(tab: Tab, live: LiveView<TopicRow> | null, top: TopicRow[]): TopicRow[] {
+  if (!live) {
+    return top;
+  }
+
+  if (tab === "unanswered") {
+    return live.filter((t) => t.unanswered);
+  }
+
+  return live.filter((t) => !t.pinned);
+}
+
+function pinnedRows(pinned: LiveView<TopicRow> | null): TopicRow[] {
+  if (!pinned) {
+    return [];
+  }
+
+  return pinned.filter((t) => t.pinned);
+}
+
+function onSentinelInsert(el: HTMLElement, live: LiveView<TopicRow>) {
+  let observer = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting) {
+      live.more();
+    }
+  }, { rootMargin: "400px" });
+
+  observer.observe(el);
+}
+
+function pageTitle(category: Category | null, tab: Tab): string {
+  let label = tab === "top" ? "Top this month" : tab === "unanswered" ? "Unanswered" : "Latest";
+
+  return category ? `${category.name} · ${label} · threadmoor` : `${label} · threadmoor`;
+}
+
+<html lang="en" class="page-topics" (
+  chrome: Chrome,
+  category: Category | null,
+  tab: Tab,
+  pinned: LiveView<TopicRow> | null,
+  live: LiveView<TopicRow> | null,
+  top: TopicRow[],
+  loadedAt: Date,
+)>
+  <head>
+    <title>{pageTitle(category, tab)}</title>
+    <meta name="description" content="threadmoor is a discussion forum for woodworkers: projects, tools, finishing and help.">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout chrome={chrome} active={category?.slug ?? ""}>
+      <div class="page-shell">
+        <div class="topics-grid">
+          <div class="stack is-lg">
+            <div class="topics-head">
+              <div e:if={category}>
+                <p class="eyebrow">Category</p>
+                <h1>{category!.name}</h1>
+                <p class="lede">{category!.description}</p>
+              </div>
+              <div e:else>
+                <p class="eyebrow">A woodworking community</p>
+                <h1>What's on the bench</h1>
+                <p class="lede">Show your work, compare tools, argue about finishes, and get unstuck.</p>
+              </div>
+
+              <a e:if={chrome.me}
+                 class="button is-primary"
+                 href={category ? `/new?category=${category.slug}` : "/new"}>
+                New topic
+              </a>
+            </div>
+
+            <div class="stack is-md">
+              <div class="row is-end topics-tabs-row" style="justify-content: space-between">
+                <nav class="topics-tabs tab-list" style="flex: 1">
+                  <a class={["tab", tab === "latest" && "is-active"]} href={tabHref(category, "latest")}>Latest</a>
+                  <a class={["tab", tab === "top" && "is-active"]} href={tabHref(category, "top")}>Top this month</a>
+                  <a class={["tab", tab === "unanswered" && "is-active"]} href={tabHref(category, "unanswered")}>Unanswered</a>
+                </nav>
+              </div>
+
+              <div e:if={pinnedRows(pinned).length > 0} class="stack is-sm">
+                <p class="topics-section-label">Pinned</p>
+                <ul class="topic-list">
+                  <TopicItem e:for={t of pinnedRows(pinned)} topic={t} showCategory={!category} />
+                </ul>
+              </div>
+
+              <div class="stack is-sm">
+                <div class="row" style="justify-content: space-between">
+                  <p class="topics-section-label">
+                    {tab === "top" ? "Most liked, started in the last 30 days" : tab === "unanswered" ? "Waiting for a first reply" : "Recently active"}
+                  </p>
+                  <span e:if={live} class="topics-live"><span class="pill-dot"></span>live</span>
+                </div>
+
+                <ul e:if={rows(tab, live, top).length > 0} class="topic-list">
+                  <TopicItem e:for={t of rows(tab, live, top)}
+                             topic={t}
+                             showCategory={!category}
+                             fresh={+new Date(t.lastPostAt) > +loadedAt} />
+                  <li e:if={live?.hasMore}
+                      class="topics-more"
+                      oninsert={(e) => onSentinelInsert(e.target as HTMLElement, live!)}>
+                    Loading more topics…
+                  </li>
+                </ul>
+
+                <div e:else class="topic-list topics-empty">
+                  <p e:if={tab === "unanswered"}>Every topic here has a reply. Nice work, everyone.</p>
+                  <p e:elseif={tab === "top"}>Nothing new this month yet.</p>
+                  <p e:else>No topics yet. Start the first one.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="topics-aside stack is-sm">
+            <p class="topics-section-label">Categories</p>
+            <ul class="cat-cards">
+              <li e:for={c of chrome.categories}>
+                <a class={["cat-card", category?.id === c.id && "is-active"]} href={`/c/${c.slug}`} style={`--cat-h: ${c.hue}`}>
+                  <span class="cat-card-name">{c.name} <span>{c.topicCount}</span></span>
+                  <p class="cat-card-desc">{c.description}</p>
+                </a>
+              </li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

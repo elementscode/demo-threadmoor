@@ -1,0 +1,96 @@
+import "./style.css";
+import { Chrome } from "#app/shared/services/forum";
+import { TopicRow } from "#app/shared/services/topics";
+import { timeAgo } from "#app/shared/services/format";
+import { Layout } from "#app/shared/templates/layout";
+import { Avatar } from "#app/shared/templates/avatar";
+import { TopicItem } from "#app/shared/templates/topic-item";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+
+export interface Profile {
+  id: string;
+  handle: string;
+  displayName: string;
+  bio: string;
+  location: string;
+  avatar: string | null;
+  isModerator: boolean;
+  createdAt: Date;
+  topicCount: number;
+  replyCount: number;
+  likesReceived: number;
+  solutionCount: number;
+}
+
+export interface RecentReply {
+  id: string;
+  topicId: string;
+  topicTitle: string;
+  excerpt: string;
+  createdAt: Date;
+}
+
+<html lang="en" class="page-profile" (
+  chrome: Chrome,
+  profile: Profile,
+  topics: TopicRow[],
+  replies: RecentReply[],
+)>
+  <head>
+    <title>{profile.displayName || profile.handle} (@{profile.handle}) · threadmoor</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout chrome={chrome}>
+      <div class="page-shell profile-shell">
+        <div class="stack is-xl">
+          <div class="profile-head">
+            <Avatar src={profile.avatar} name={profile.handle} size="xl" />
+            <div class="stack is-sm" style="flex: 1">
+              <div class="row" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-3)">
+                <h1>{profile.displayName || profile.handle}</h1>
+                <a e:if={chrome.me?.id === profile.id} class="button is-sm" href="/settings">Edit profile</a>
+              </div>
+              <div class="profile-meta cluster is-sm">
+                <span>@{profile.handle}</span>
+                <span e:if={profile.isModerator} class="pill is-accent">Moderator</span>
+                <span e:if={profile.location}>{profile.location}</span>
+                <span>Joined {profile.createdAt.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
+              </div>
+              <p e:if={profile.bio} class="profile-bio">{profile.bio}</p>
+            </div>
+          </div>
+
+          <div class="profile-stats">
+            <div class="profile-stat"><strong>{profile.topicCount}</strong><span>topics started</span></div>
+            <div class="profile-stat"><strong>{profile.replyCount}</strong><span>replies</span></div>
+            <div class="profile-stat"><strong>{profile.likesReceived}</strong><span>likes received</span></div>
+            <div class="profile-stat"><strong>{profile.solutionCount}</strong><span>solutions</span></div>
+          </div>
+
+          <div class="stack is-sm">
+            <p class="profile-label">Topics</p>
+            <ul e:if={topics.length > 0} class="topic-list">
+              <TopicItem e:for={t of topics} topic={t} />
+            </ul>
+            <p e:else class="profile-empty">No topics yet.</p>
+          </div>
+
+          <div class="stack is-sm">
+            <p class="profile-label">Recent replies</p>
+            <ul e:if={replies.length > 0} class="reply-list">
+              <li e:for={r of replies}>
+                <a class="reply-item" href={`/t/${r.topicId}#post-${r.id}`}>
+                  <strong>{r.topicTitle}</strong>
+                  <p class="line-clamp-2">{r.excerpt}</p>
+                  <small>{timeAgo(r.createdAt)}</small>
+                </a>
+              </li>
+            </ul>
+            <p e:else class="profile-empty">No replies yet.</p>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

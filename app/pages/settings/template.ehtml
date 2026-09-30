@@ -1,0 +1,248 @@
+import "./style.css";
+import { sql, session, File, ValidationError } from "@elements/app";
+import { Chrome } from "#app/shared/services/forum";
+import { storeImage, mediaUrl } from "#app/shared/services/media";
+import { sendDigest } from "#app/shared/services/digest";
+import { timeAgo } from "#app/shared/services/format";
+import { Layout } from "#app/shared/templates/layout";
+import { Avatar } from "#app/shared/templates/avatar";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+
+export const MAX_BIO = 600;
+
+export interface ProfileForm {
+  displayName: string;
+  location: string;
+  bio: string;
+}
+
+export interface Followed {
+  id: string;
+  topicId: string;
+  title: string;
+  lastPostAt: Date;
+}
+
+interface State {
+  form: ProfileForm;
+  avatar: string | null;
+  saving: boolean;
+  uploading: boolean;
+  saved: string;
+  error: string;
+  digest: string;
+  follows: Followed[];
+}
+
+/** @rpc */
+export function saveProfile(form: ProfileForm) {
+  session.isLoggedInOrThrow();
+
+  let displayName = form.displayName.trim().slice(0, 60);
+  let location = form.location.trim().slice(0, 60);
+  let bio = form.bio.trim();
+
+  if (bio.length > MAX_BIO) {
+    throw new ValidationError(`keep your bio under ${MAX_BIO} characters`);
+  }
+
+  sql(`
+    update users
+       set displayName = ${displayName}, location = ${location}, bio = ${bio}
+     where id = ${session.getOrThrow("userId")}
+  `);
+}
+
+/** @rpc */
+export function setAvatar(form: { avatar: File }): string {
+  session.isLoggedInOrThrow();
+
+  let image = storeImage(form.avatar);
+
+  sql(`update users set avatarId = ${image.id} where id = ${session.getOrThrow("userId")}`);
+
+  return mediaUrl(image);
+}
+
+/** @rpc */
+export function unfollow(topicId: string) {
+  session.isLoggedInOrThrow();
+  sql(`delete from follows where topicId = ${topicId} and userId = ${session.getOrThrow("userId")}`);
+}
+
+/**
+ * The daily digest on demand, so a member can see what it looks like without
+ * waiting for 8am.
+ * @rpc
+ */
+export function sendDigestNow(): string {
+  session.isLoggedInOrThrow();
+
+  let digest = sendDigest(session.getOrThrow("userId"));
+
+  if (digest.replyCount === 0) {
+    return "Nothing new in the topics you follow since your last digest.";
+  }
+
+  let topics = digest.topics.length === 1 ? "1 topic" : `${digest.topics.length} topics`;
+  let replies = digest.replyCount === 1 ? "1 new reply" : `${digest.replyCount} new replies`;
+
+  return `Sent ${replies} from ${topics} to ${digest.to}.`;
+}
+
+function onSave(state: State) {
+  state.saving = true;
+  state.error = "";
+  state.saved = "";
+
+  try {
+    saveProfile(state.form);
+    state.saved = "Profile saved.";
+  } catch (err: any) {
+    state.error = err.message;
+  }
+
+  state.saving = false;
+}
+
+function onPickAvatar(e: Event, state: State) {
+  let input = e.target as HTMLInputElement;
+
+  state.uploading = true;
+  state.error = "";
+
+  try {
+    let [avatar] = File.read(input);
+
+    if (avatar) {
+      state.avatar = setAvatar({ avatar });
+      state.saved = "New avatar saved.";
+    }
+  } catch (err: any) {
+    state.error = err.message;
+  }
+
+  input.value = "";
+  state.uploading = false;
+}
+
+function onUnfollow(state: State, f: Followed) {
+  unfollow(f.topicId);
+  state.follows = state.follows.filter((x) => x.id !== f.id);
+}
+
+function onDigest(state: State) {
+  state.digest = "Sending…";
+  state.digest = sendDigestNow();
+}
+
+<html lang="en" class="page-settings" (
+  chrome: Chrome,
+  initial: ProfileForm,
+  avatar: string | null,
+  follows: Followed[],
+  welcome: boolean,
+  email: string,
+  private state: State = {
+    form: initial,
+    avatar,
+    saving: false,
+    uploading: false,
+    saved: "",
+    error: "",
+    digest: "",
+    follows,
+  },
+)>
+  <head>
+    <title>Settings · threadmoor</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout chrome={chrome}>
+      <div class="page-shell settings-shell">
+        <div class="stack is-lg">
+          <div class="stack is-xs">
+            <p class="eyebrow">Settings</p>
+            <h1>Your profile</h1>
+          </div>
+
+          <div e:if={welcome} class="callout is-accent">
+            <div class="callout-title">Welcome to threadmoor, {chrome.me?.handle}</div>
+            <div class="callout-body">Add a photo and a line about your shop so people know who they're talking to.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Profile</h2></div>
+            <div class="card-body stack is-md">
+              <div class="settings-avatar row">
+                <Avatar src={state.avatar} name={chrome.me?.handle ?? "?"} size="xl" />
+                <div>
+                  <label class={["button is-sm file-button", state.uploading && "is-loading"]}>
+                    {state.avatar ? "Change avatar" : "Upload avatar"}
+                    <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" onchange={(e) => onPickAvatar(e, state)}>
+                  </label>
+                  <p class="hint">A square png, jpeg, gif or webp, up to 4 MB.</p>
+                </div>
+              </div>
+
+              <form class="stack is-md" onsubmit={() => onSave(state)}>
+                <div class="field">
+                  <label for="displayName">Name</label>
+                  <input id="displayName" value={state.form.displayName} maxlength={60} placeholder="How your name shows on posts">
+                </div>
+
+                <div class="field">
+                  <label for="location">Location</label>
+                  <input id="location" value={state.form.location} maxlength={60} placeholder="Town, region">
+                </div>
+
+                <div class="field">
+                  <label for="bio">Bio</label>
+                  <textarea id="bio" value={state.form.bio} maxlength={MAX_BIO} placeholder="What do you build? What's in your shop?"></textarea>
+                  <p class="hint">{state.form.bio.length} / {MAX_BIO}</p>
+                </div>
+
+                <div e:if={state.error} class="callout is-danger" role="alert">
+                  <div class="callout-body">{state.error}</div>
+                </div>
+
+                <div class="row" style="justify-content: space-between">
+                  <span class="hint" role="status">{state.saved}</span>
+                  <div class="row" style="gap: var(--space-2)">
+                    <a class="button is-ghost" href={`/u/${chrome.me?.handle}`}>View profile</a>
+                    <button type="submit" class={["is-primary", state.saving && "is-loading"]}>Save profile</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Followed topics</h2></div>
+            <div class="card-body stack is-md">
+              <p class="hint" style="margin: 0">
+                Every morning at 8am, new replies in these topics arrive at <strong>{email}</strong> in one digest. You follow a topic when you start it or reply to it.
+              </p>
+
+              <ul e:if={state.follows.length > 0} class="follow-list">
+                <li e:for={f of state.follows} class="follow-item row">
+                  <a href={`/t/${f.topicId}`} class="truncate">
+                    {f.title}
+                    <small>active {timeAgo(f.lastPostAt)}</small>
+                  </a>
+                  <button class="is-sm is-ghost" onclick={() => onUnfollow(state, f)}>Unfollow</button>
+                </li>
+              </ul>
+              <p e:else class="hint">You aren't following any topics yet.</p>
+            </div>
+            <div class="card-foot">
+              <span class="hint" role="status" style="margin-right: auto">{state.digest}</span>
+              <button onclick={() => onDigest(state)}>Send my digest now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

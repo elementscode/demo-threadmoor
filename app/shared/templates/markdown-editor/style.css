@@ -1,0 +1,65 @@
+.md-editor-head {
+  justify-content: space-between;
+}
+
+.md-editor-head .tab-list {
+  border: 0;
+}
+
+.md-editor textarea {
+  min-height: 9rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.md-editor.is-tall textarea,
+.md-editor.is-tall .md-editor-preview {
+  min-height: 16rem;
+}
+
+.md-editor-preview {
+  min-height: 9rem;
+  max-width: none;
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.md-editor-preview img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+.md-editor-foot {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.md-editor-hint {
+  color: var(--ink-dim);
+  font-size: var(--text-xs);
+}
+
+.file-button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 40rem) {
+  .md-editor-hint {
+    display: none;
+  }
+}

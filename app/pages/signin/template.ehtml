@@ -1,0 +1,128 @@
+import "./style.css";
+import { redirect } from "@elements/app";
+import { Chrome } from "#app/shared/services/forum";
+import { signin } from "#app/shared/services/auth";
+import { Layout } from "#app/shared/templates/layout";
+import { Avatar } from "#app/shared/templates/avatar";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+
+export const DEMO_PASSWORD = "sawdust123";
+
+export interface DemoLogin {
+  id: string;
+  handle: string;
+  email: string;
+  displayName: string;
+  avatar: string | null;
+  isModerator: boolean;
+}
+
+interface SigninForm {
+  login: string;
+  password: string;
+  error: string;
+  busy: boolean;
+}
+
+function onSubmit(form: SigninForm, next: string) {
+  form.busy = true;
+
+  try {
+    signin(form.login, form.password);
+    form.error = "";
+    redirect(next);
+  } catch (err: any) {
+    form.error = err.message;
+    form.busy = false;
+  }
+}
+
+function onDemoClick(form: SigninForm, demo: DemoLogin, next: string) {
+  form.login = demo.email;
+  form.password = DEMO_PASSWORD;
+  onSubmit(form, next);
+}
+
+<html lang="en" class="page-signin" (
+  chrome: Chrome,
+  demos: DemoLogin[],
+  next: string,
+  private form: SigninForm = { login: "", password: "", error: "", busy: false },
+)>
+  <head>
+    <title>Sign in · threadmoor</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout chrome={chrome}>
+      <div class="page-shell">
+        <div class={["auth", demos.length === 0 && "is-single"]}>
+          <div class="card">
+            <div class="card-body">
+              <form class="stack is-md" onsubmit={() => onSubmit(form, next)}>
+                <div class="stack is-xs">
+                  <h1>Sign in</h1>
+                  <p class="auth-alt">Welcome back to the shop.</p>
+                </div>
+
+                <div e:if={form.error} class="callout is-danger" role="alert">
+                  <div class="callout-body">{form.error}</div>
+                </div>
+
+                <div class="field">
+                  <label for="login">Email or handle</label>
+                  <input id="login"
+                         name="login"
+                         type="text"
+                         value={form.login}
+                         autocomplete="username"
+                         autocapitalize="none"
+                         spellcheck={false}
+                         placeholder="you@example.com"
+                         required>
+                </div>
+
+                <div class="field">
+                  <label for="password">Password</label>
+                  <input id="password"
+                         name="password"
+                         type="password"
+                         value={form.password}
+                         autocomplete="current-password"
+                         required>
+                </div>
+
+                <button type="submit" class={["is-primary is-block", form.busy && "is-loading"]}>Sign in</button>
+
+                <p class="auth-alt">New here? <a href="/signup">Create an account</a></p>
+              </form>
+            </div>
+          </div>
+
+          <div e:if={demos.length > 0} class="card">
+            <div class="card-head">
+              <h2>Demo logins</h2>
+            </div>
+            <div class="card-body stack is-sm">
+              <p class="auth-alt">
+                Every seeded account uses the password <code class="demo-password">{DEMO_PASSWORD}</code>. Click one to sign in.
+              </p>
+              <ul class="demo-logins">
+                <li e:for={d of demos}>
+                  <button type="button" class="demo-login" onclick={() => onDemoClick(form, d, next)}>
+                    <Avatar src={d.avatar} name={d.handle} size="sm" />
+                    <span class="demo-login-name">
+                      <strong>{d.displayName}</strong>
+                      <span>{d.email}</span>
+                    </span>
+                    <span e:if={d.isModerator} class="pill is-accent">Moderator</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

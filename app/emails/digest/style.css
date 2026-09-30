@@ -1,0 +1,49 @@
+@import "#app/shared/styles/email.css";
+
+.email.digest .digest-brand {
+  margin: 0 0 24px;
+  color: #b0501f;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.email.digest .digest-topic {
+  margin: 0 0 24px;
+  padding: 16px 18px;
+  border: 1px solid #eadfd3;
+  border-radius: 8px;
+}
+
+.email.digest .digest-topic h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.email.digest .digest-topic h2 a {
+  color: #2a1d14;
+  text-decoration: none;
+}
+
+.email.digest .digest-count {
+  margin: 0 0 12px;
+  color: #7a6a5c;
+  font-size: 13px;
+}
+
+.email.digest .digest-reply {
+  margin: 0 0 10px;
+  padding-left: 12px;
+  border-left: 3px solid #eadfd3;
+  color: #4a3b30;
+  font-size: 14px;
+}
+
+.email.digest .digest-reply strong {
+  color: #2a1d14;
+}
+
+.email.digest .digest-more {
+  margin: 0;
+  font-size: 13px;
+}

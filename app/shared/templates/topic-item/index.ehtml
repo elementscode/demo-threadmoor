@@ -1,0 +1,50 @@
+import "./style.css";
+import { TopicRow } from "#app/shared/services/topics";
+import { timeAgo } from "#app/shared/services/format";
+import { Avatar } from "#app/shared/templates/avatar";
+
+<TopicItem (topic: TopicRow, showCategory: boolean = true, fresh: boolean = false)>
+  <li class={["topic-item", fresh && "is-new"]}>
+    <Avatar src={topic.authorAvatar} name={topic.authorHandle} />
+
+    <div class="topic-main">
+      <a class="topic-title" href={`/t/${topic.id}`}>
+        <svg e:if={topic.pinned} class="topic-flag" width="14" height="14" viewBox="0 0 16 16" aria-label="Pinned">
+          <path d="M10 1.5 14.5 6l-2 .8-2.7 2.7.3 3.3-1.4 1.4-2.8-2.8L2.5 14.8 1.2 13.5l3.4-3.4L1.8 7.3l1.4-1.4 3.3.3 2.7-2.7z" fill="currentColor"/>
+        </svg>
+        <svg e:if={topic.locked} class="topic-flag" width="14" height="14" viewBox="0 0 16 16" aria-label="Locked">
+          <path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2h.5A1.5 1.5 0 0 1 13.5 8.5v5A1.5 1.5 0 0 1 12 15H4a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 4 7zm1.5 0h4V5a2 2 0 0 0-4 0z" fill="currentColor"/>
+        </svg>
+        {topic.title}
+      </a>
+
+      <p e:if={topic.excerpt} class="topic-excerpt line-clamp-2">{topic.excerpt}</p>
+
+      <div class="topic-meta cluster is-sm">
+        <a e:if={showCategory} class="cat-chip" href={`/c/${topic.categorySlug}`} style={`--cat-h: ${topic.categoryHue}`}>
+          <span class="cat-dot"></span>
+          {topic.categoryName}
+        </a>
+        <span>
+          by <a href={`/u/${topic.authorHandle}`}>{topic.authorHandle}</a>
+        </span>
+        <span e:if={topic.replyCount > 0 && topic.lastHandle}>
+          last reply <a href={`/u/${topic.lastHandle}`}>{topic.lastHandle}</a> {timeAgo(topic.lastPostAt)}
+        </span>
+        <span e:else>{timeAgo(topic.createdAt)}</span>
+        <span e:if={topic.solved} class="pill is-success">Solved</span>
+      </div>
+    </div>
+
+    <div class="topic-stats">
+      <span class={["topic-stat", topic.replyCount === 0 && "is-zero"]}>
+        <strong>{topic.replyCount}</strong>
+        {topic.replyCount === 1 ? "reply" : "replies"}
+      </span>
+      <span class={["topic-stat", topic.likeCount === 0 && "is-zero"]}>
+        <strong>{topic.likeCount}</strong>
+        {topic.likeCount === 1 ? "like" : "likes"}
+      </span>
+    </div>
+  </li>
+</TopicItem>

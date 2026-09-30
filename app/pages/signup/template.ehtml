@@ -1,0 +1,121 @@
+import "./style.css";
+import { redirect, ValidationError } from "@elements/app";
+import { Chrome } from "#app/shared/services/forum";
+import { signup, MIN_PASSWORD, SignupForm } from "#app/shared/services/auth";
+import { Layout } from "#app/shared/templates/layout";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+
+interface SignupState {
+  form: SignupForm;
+  errors: Record<string, string[]>;
+  error: string;
+  busy: boolean;
+}
+
+function onSubmit(state: SignupState) {
+  state.busy = true;
+
+  try {
+    signup(state.form);
+    state.errors = {};
+    state.error = "";
+    redirect("/settings?welcome=1");
+  } catch (err: any) {
+    if (err instanceof ValidationError && typeof err.errors === "object") {
+      state.errors = err.errors as Record<string, string[]>;
+      state.error = "";
+    } else {
+      state.errors = {};
+      state.error = err.message;
+    }
+
+    state.busy = false;
+  }
+}
+
+<html lang="en" class="page-signup" (
+  chrome: Chrome,
+  private state: SignupState = {
+    form: { handle: "", email: "", password: "" },
+    errors: {},
+    error: "",
+    busy: false,
+  },
+)>
+  <head>
+    <title>Join · threadmoor</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout chrome={chrome}>
+      <div class="page-shell">
+        <div class="auth is-single">
+          <div class="card">
+            <div class="card-body">
+              <form class="stack is-md" onsubmit={() => onSubmit(state)}>
+                <div class="stack is-xs">
+                  <h1>Join threadmoor</h1>
+                  <p class="auth-alt">Post your projects, ask questions, follow the topics you care about.</p>
+                </div>
+
+                <div e:if={state.error} class="callout is-danger" role="alert">
+                  <div class="callout-body">{state.error}</div>
+                </div>
+
+                <div class="field">
+                  <label for="handle">Handle</label>
+                  <input id="handle"
+                         name="handle"
+                         type="text"
+                         value={state.form.handle}
+                         class={[state.errors.handle && "is-error"]}
+                         autocomplete="username"
+                         autocapitalize="none"
+                         spellcheck={false}
+                         placeholder="benchdog"
+                         required>
+                  <p e:if={state.errors.handle} class="field-error">{state.errors.handle?.[0]}</p>
+                  <p e:else class="hint">How you appear on posts. Letters, numbers, dots and dashes.</p>
+                </div>
+
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input id="email"
+                         name="email"
+                         type="email"
+                         value={state.form.email}
+                         class={[state.errors.email && "is-error"]}
+                         autocomplete="email"
+                         autocapitalize="none"
+                         spellcheck={false}
+                         placeholder="you@example.com"
+                         required>
+                  <p e:if={state.errors.email} class="field-error">{state.errors.email?.[0]}</p>
+                  <p e:else class="hint">For your daily digest of followed topics. Never shown.</p>
+                </div>
+
+                <div class="field">
+                  <label for="password">Password</label>
+                  <input id="password"
+                         name="password"
+                         type="password"
+                         value={state.form.password}
+                         class={[state.errors.password && "is-error"]}
+                         autocomplete="new-password"
+                         minlength={MIN_PASSWORD}
+                         required>
+                  <p e:if={state.errors.password} class="field-error">{state.errors.password?.[0]}</p>
+                  <p e:else class="hint">At least {MIN_PASSWORD} characters.</p>
+                </div>
+
+                <button type="submit" class={["is-primary is-block", state.busy && "is-loading"]}>Create account</button>
+
+                <p class="auth-alt">Already a member? <a href="/signin">Sign in</a></p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

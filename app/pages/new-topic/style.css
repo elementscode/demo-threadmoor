@@ -1,0 +1,76 @@
+@import "#app/shared/styles/page.css";
+
+.new-topic-shell {
+  max-width: 50rem;
+}
+
+.new-topic-shell h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  letter-spacing: -0.02em;
+}
+
+.new-topic-cats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.new-topic-cat {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: var(--space-1);
+  height: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  text-align: left;
+  font-weight: var(--weight-regular);
+  cursor: pointer;
+}
+
+.new-topic-cat:hover {
+  border-color: var(--rule-strong);
+}
+
+.new-topic-cat.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+  background: var(--accent-soft);
+}
+
+.new-topic-cat strong {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+}
+
+.new-topic-cat span {
+  color: var(--ink-dim);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.new-topic-title input {
+  font-size: var(--text-lg);
+}
+
+@media (max-width: 40rem) {
+  .new-topic-shell h1 {
+    font-size: var(--text-3xl);
+  }
+
+  .new-topic-cats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .new-topic-cat span {
+    display: none;
+  }
+}
