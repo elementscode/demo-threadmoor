@@ -1,0 +1,32 @@
+import "./style.css";
+import { Digest } from "#app/shared/services/digest";
+
+/**
+ * The daily digest of new replies in followed topics.
+ *
+ * @email
+ */
+<html (digest: Digest)>
+  <body class="email digest">
+    <div class="email-wrap">
+      <p class="digest-brand">threadmoor</p>
+      <h1>New replies in topics you follow</h1>
+      <p>Hi {digest.handle}, here's what happened since your last digest.</p>
+
+      <div e:for={t of digest.topics} class="digest-topic">
+        <h2><a href={`/t/${t.id}`}>{t.title}</a></h2>
+        <p class="digest-count">{t.count} new {t.count === 1 ? "reply" : "replies"}</p>
+        <p e:for={r of t.replies} class="digest-reply">
+          <strong>@{r.handle}</strong> {r.excerpt}
+        </p>
+        <p e:if={t.count > t.replies.length} class="digest-more">
+          <a href={`/t/${t.id}`}>and {t.count - t.replies.length} more</a>
+        </p>
+      </div>
+
+      <div class="email-footer">
+        <p>You get this because you follow these topics on threadmoor. <a href="/settings">Manage what you follow</a>.</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+import "./style.css";
+import { redirect } from "@elements/app";
+import { Chrome } from "#app/shared/services/forum";
+import { signout } from "#app/shared/services/auth";
+import { Avatar } from "#app/shared/templates/avatar";
+
+function onSignout() {
+  signout();
+  redirect("/");
+}
+
+<Layout (chrome: Chrome, active: string = "")>
+  <div class="app tm-app">
+    <header class="tm-header">
+      <div class="tm-header-inner">
+        <a href="/" class="tm-brand">
+          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+            <rect x="1" y="1" width="26" height="26" rx="7" fill="currentColor"/>
+            <path d="M6 9.5c4.5-2.2 11.5-2.2 16 0M6 14c4.5-2.2 11.5-2.2 16 0M6 18.5c4.5-2.2 11.5-2.2 16 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.92"/>
+          </svg>
+          threadmoor
+        </a>
+
+        <nav class="tm-cats cluster is-xs" aria-label="Categories">
+          <a e:for={c of chrome.categories}
+             href={`/c/${c.slug}`}
+             class={["tm-cat", active === c.slug && "is-active"]}
+             style={`--cat-h: ${c.hue}`}>
+            <span class="cat-dot"></span>
+            {c.name}
+          </a>
+        </nav>
+
+        <div e:if={chrome.me} class="tm-user row">
+          <a class="button is-primary is-sm" href="/new" aria-label="New topic">
+            <svg class="tm-icon" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="tm-label">New topic</span>
+          </a>
+          <a class="tm-me" href={`/u/${chrome.me!.handle}`}>
+            <Avatar src={chrome.me!.avatar} name={chrome.me!.handle} size="sm" />
+            <span class="tm-me-name">{chrome.me!.handle}</span>
+          </a>
+          <button class="is-ghost is-sm" aria-label="Sign out" onclick={() => onSignout()}>
+            <svg class="tm-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M6 2.5H3.5v11H6M10.5 5l3 3-3 3M13.5 8H6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="tm-label">Sign out</span>
+          </button>
+        </div>
+
+        <div e:else class="tm-user row">
+          <a class="button is-ghost is-sm" href="/signin">Sign in</a>
+          <a class="button is-primary is-sm" href="/signup">Join</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main tm-main">
+      <slot/>
+    </main>
+
+    <footer class="tm-footer">
+      <div class="tm-footer-inner cluster">
+        <span>threadmoor, a woodworking community</span>
+        <nav class="cluster is-md">
+          <a class="link-muted" href="/">Latest</a>
+          <a class="link-muted" href="/top">Top</a>
+          <a class="link-muted" href="/unanswered">Unanswered</a>
+          <a class="link-muted" href="/settings">Settings</a>
+        </nav>
+      </div>
+    </footer>
+  </div>
+</Layout>
