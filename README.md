@@ -1,12 +1,12 @@
-![Threadmoor, a woodworking discussion forum built with Elements: a Help topic about blotchy stain on pine, with a photo, a solved banner, follow and moderator tools.](TBD)
+![Threadmoor, a woodworking discussion forum built with Elements: a Help topic about blotchy stain on pine, with a photo, a solved banner, follow and moderator tools.](https://elements.dev/demos/01a0f3f6-d2c9-742c-b9f5-f4a6f72cf35a/poster?v=d255e151ed6f)
 
 # Threadmoor
 
 > A demo app built with [Elements](https://elements.dev).
 
-Topics with markdown and photos, quoted replies, likes and marked solutions, live lists, a daily digest of followed topics, and moderator tools.
+Topics with photos, quoted replies, likes, marked solutions, live topic lists, a daily digest and moderator tools.
 
-**Demo:** [Threadmoor](TBD)
+**Demo:** [Threadmoor](https://elements.dev/demos/01a0f3f6-d2c9-742c-b9f5-f4a6f72cf35a)
 
 ## Agent specs
 
