@@ -30,10 +30,15 @@ Threadmoor needed topic lists that update as people post, replies that land on e
 ### What Elements gave the app
 
 - **Live topic lists.** Topics are a LiveTable opened on the front page, per category, on the unanswered tab and on the pinned strip, 25 at a time. A database trigger announces each new topic and fresh reply, so every open list moves as the forum does.
+
 - **Live threads.** Posts and likes are LiveTables. A reply, with its quote, appears on every open copy of the topic, and marking a solution or hiding a post updates every screen, the previous solution included.
+
 - **Moderation as function calls.** Moderators pin, lock and move topics with `@rpc` functions, each checked against the signed-in user's role.
+
 - **Image uploads.** The editor uploads photos through an rpc that returns the markdown to embed them, and a route serves each image under its content hash.
+
 - **A daily digest.** One cron line runs a job each morning that queues an email for every member with new replies in the topics they follow, one job per member so each retries on its own.
+
 - **Data from SQL files.** Three migrations define the forum, add four categories with solutions turned on for Help, and seed nine members, thirty topics, replies, likes, avatars and woodworking photos.
 
 ### What the project server gave the agent
