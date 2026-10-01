@@ -37,7 +37,7 @@ Threadmoor needed topic lists that update as people post, replies that land on e
 
 ### What the agent got from the tooling
 
-The agent ran 39 builds in 30 minutes. By the build's own timer, the median build finished in 45 milliseconds, so it checked its work after each edit and kept going. The build caught one error along the way: a call inside a `try` block that would discard a promise, plus a note pointing to where the function was declared. The agent read the manual for each part as it reached it, 37 pages from `recipes/live-from-sql` and `jobs` to `style/theming/branding`, then wrote 38 tests. In a real browser it signed in members side by side to watch new topics, replies, solutions and hidden posts arrive live, uploaded an image, and checked four pages at phone width.
+The agent ran 39 builds in 30 minutes. It checked its work after each edit and kept going. The build caught one error along the way: a call inside a `try` block that would discard a promise, plus a note pointing to where the function was declared. The agent read the manual for each part as it reached it, 37 pages from `recipes/live-from-sql` and `jobs` to `style/theming/branding`, then wrote 38 tests. In a real browser it signed in members side by side to watch new topics, replies, solutions and hidden posts arrive live, uploaded an image, and checked four pages at phone width.
 
 Start in `app/pages/topic/services.ts`.
 
