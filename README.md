@@ -35,9 +35,13 @@ Threadmoor needed topic lists that update as people post, replies that land on e
 - **A daily digest.** One line in `index.ts`, `app.cron("every day at 8am", ...)`, runs `DailyDigestJob`, which queues a `SendDigestJob` for each member with new replies in the topics they follow. Each job retries on its own and sends the `digest` email template.
 - **Data from SQL files.** Three migrations define the forum, add four categories with solutions turned on for Help, and seed nine members, thirty topics, replies, likes, avatars and woodworking photos.
 
-### What the agent got from the tooling
+### What the project server gave the agent
 
-The agent ran 39 builds in 30 minutes. It checked its work after each edit and kept going. The build caught one error along the way: a call inside a `try` block that would discard a promise, plus a note pointing to where the function was declared. The agent read the manual for each part as it reached it, 37 pages from `recipes/live-from-sql` and `jobs` to `style/theming/branding`, then wrote 38 tests. In a real browser it signed in members side by side to watch new topics, replies, solutions and hidden posts arrive live, uploaded an image, and checked four pages at phone width.
+The project server runs alongside the agent and answers as soon as a file is saved: it type-checks the templates, TypeScript and SQL, applies migrations and reruns the tests, so every question came back right away and the agent kept building.
+
+### What shipped
+
+The app type-checks with zero errors and all 38 tests pass. During the build the agent signed in several members side by side and watched new topics, replies, solutions and hidden posts arrive live. Every page was checked on desktop and phone before publishing, and the repo was installed fresh from GitHub and run before the demo went live.
 
 Start in `app/pages/topic/services.ts`.
 
