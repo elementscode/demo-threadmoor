@@ -23,6 +23,24 @@ app.
 elements create threadmoor -scaffold=elementscode/demo-threadmoor
 ```
 
+## How it's built
+
+Threadmoor needed topic lists that update as people post, replies that land on every open copy of a thread, image uploads, a daily email digest and moderator controls. Each of those is a part of Elements, so the agent spent its 30 minutes on the forum itself.
+
+### What Elements gave the app
+
+- **Live topic lists.** `topics` in `app/shared/services/topics.ts` is a LiveTable opened on the front page, per category, on the unanswered tab and on the pinned strip, 25 at a time with a keyset window. A database trigger announces each new topic and fresh reply, so every open list moves as the forum does.
+- **Live threads.** `posts` in `app/pages/topic/services.ts` is a LiveTable. A reply, with its quote, goes in through the view and appears on every open copy of the topic, and marking a solution or hiding a post updates every screen, the previous solution included. `postLikes` is a LiveTable too.
+- **Server calls as function calls.** Moderators pin, lock and move topics with `@rpc` functions such as `setPinned` and `moveTopic`, each starting with `isModeratorOrThrow()`. `uploadImages` in `app/shared/services/media.ts` stores photos and returns the markdown that embeds them, and `app/routes/media.ts` serves each one under its content hash.
+- **A daily digest.** One line in `index.ts`, `app.cron("every day at 8am", ...)`, runs `DailyDigestJob`, which queues a `SendDigestJob` for each member with new replies in the topics they follow. Each job retries on its own and sends the `digest` email template.
+- **Data from SQL files.** Three migrations define the forum, add four categories with solutions turned on for Help, and seed nine members, thirty topics, replies, likes, avatars and woodworking photos.
+
+### What the agent got from the tooling
+
+The agent ran 39 builds in 30 minutes. By the build's own timer, the median build finished in 45 milliseconds, so it checked its work after each edit and kept going. The build caught one error along the way: a call inside a `try` block that would discard a promise with a note pointing to where the function was declared. The agent read the manual for each part as it reached it, 37 pages from `recipes/live-from-sql` and `jobs` to `style/theming/branding`, then wrote 38 tests. In a real browser it signed in members side by side to watch new topics, replies, solutions and hidden posts arrive live, uploaded an image, and checked four pages at phone width.
+
+Start in `app/pages/topic/services.ts`.
+
 ## Seed data and demo accounts
 
 The seed creates four categories (Projects, Tools, Finishing, Help), 33
