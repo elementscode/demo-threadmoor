@@ -41,7 +41,7 @@ The project server runs alongside the agent and answers as soon as a file is sav
 
 ### What shipped
 
-The app type-checks with zero errors and all 38 tests pass. During the build the agent signed in several members side by side and watched new topics, replies, solutions and hidden posts arrive live. Every page was checked on desktop and phone before publishing.
+The app type-checks with zero errors and all 38 tests pass. Every page works on desktop and phone, and live updates arrive across tabs, such as new topics, replies, solutions and hidden posts.
 
 Start in `app/pages/topic/services.ts`.
 
