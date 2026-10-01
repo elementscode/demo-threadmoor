@@ -29,10 +29,11 @@ Threadmoor needed topic lists that update as people post, replies that land on e
 
 ### What Elements gave the app
 
-- **Live topic lists.** `topics` in `app/shared/services/topics.ts` is a LiveTable opened on the front page, per category, on the unanswered tab and on the pinned strip, 25 at a time with a keyset window. A database trigger announces each new topic and fresh reply, so every open list moves as the forum does.
-- **Live threads.** `posts` in `app/pages/topic/services.ts` is a LiveTable. A reply, with its quote, goes in through the view and appears on every open copy of the topic, and marking a solution or hiding a post updates every screen, the previous solution included. `postLikes` is a LiveTable too.
-- **Server calls as function calls.** Moderators pin, lock and move topics with `@rpc` functions such as `setPinned` and `moveTopic`, each starting with `isModeratorOrThrow()`. `uploadImages` in `app/shared/services/media.ts` stores photos and returns the markdown that embeds them, and `app/routes/media.ts` serves each one under its content hash.
-- **A daily digest.** One line in `index.ts`, `app.cron("every day at 8am", ...)`, runs `DailyDigestJob`, which queues a `SendDigestJob` for each member with new replies in the topics they follow. Each job retries on its own and sends the `digest` email template.
+- **Live topic lists.** Topics are a LiveTable opened on the front page, per category, on the unanswered tab and on the pinned strip, 25 at a time. A database trigger announces each new topic and fresh reply, so every open list moves as the forum does.
+- **Live threads.** Posts and likes are LiveTables. A reply, with its quote, appears on every open copy of the topic, and marking a solution or hiding a post updates every screen, the previous solution included.
+- **Moderation as function calls.** Moderators pin, lock and move topics with `@rpc` functions, each checked against the signed-in user's role.
+- **Image uploads.** The editor uploads photos through an rpc that returns the markdown to embed them, and a route serves each image under its content hash.
+- **A daily digest.** One cron line runs a job each morning that queues an email for every member with new replies in the topics they follow, one job per member so each retries on its own.
 - **Data from SQL files.** Three migrations define the forum, add four categories with solutions turned on for Help, and seed nine members, thirty topics, replies, likes, avatars and woodworking photos.
 
 ### What the project server gave the agent
@@ -42,8 +43,6 @@ The project server runs alongside the agent and answers as soon as a file is sav
 ### What shipped
 
 The app type-checks with zero errors and all 38 tests pass. Every page works on desktop and phone, and live updates arrive across tabs, such as new topics, replies, solutions and hidden posts.
-
-Start in `app/pages/topic/services.ts`.
 
 ## Seed data and demo accounts
 
