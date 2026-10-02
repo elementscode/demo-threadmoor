@@ -10,9 +10,6 @@ Topics with photos, quoted replies, likes, marked solutions, live topic lists, a
 
 ## Agent specs
 
-What one run of the prompt below took, from an empty Elements project to this
-app.
-
 - **Agent:** Claude Code, Opus 5.5 Medium
 - **Time:** 30 min
 - **Cost:** $9.74 at API rates, September 2026
@@ -73,25 +70,7 @@ The daily digest goes out at 8am. In development, emails are written to
 `.elements/logs/program.log` instead of being sent, and Settings has a "Send
 my digest now" button.
 
-## The prompt
-
-```text
-Build a discussion forum named threadmoor for a woodworking community.
-
-- Sign up, log in, profile with avatar and bio.
-- Categories (projects, tools, finishing, help), each with topics.
-- Start a topic with markdown and images; reply; quote a reply.
-- Like posts. Mark a reply as the solution in the help category.
-- Topic lists: latest, top this month, unanswered.
-- Follow topics; a daily email digest of new replies in followed topics.
-- Moderators pin, lock and move topics, and hide posts.
-
-Seed a moderator, eight members, four categories and about thirty topics with
-replies and images. Show the seeded logins on the sign-in page.
-
-New topics and replies appear in real time, with infinite scroll on long
-topics.
-```
+**Demo:** [Threadmoor](https://elements.dev/demos/01a0f3f6-d2c9-742c-b9f5-f4a6f72cf35a)
 
 ## License
 
