@@ -377,7 +377,7 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
             </li>
           </ul>
 
-          <Card e:if={!chrome.me}>
+          <Card e:if={!chrome.me} size="sm">
             <CardContent class="row topic-signin">
               <span>Sign in to reply, like posts and follow this topic.</span>
               <Button variant="primary" href={`/signin?next=/t/${topic.id}`}>Sign in to reply</Button>
@@ -391,7 +391,7 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
                  description="A moderator closed it to new replies." />
 
           <form e:else id="reply" class="composer" onsubmit={() => onReply(composer, posts, chrome.me!, state)}>
-            <Card>
+            <Card size="sm">
               <CardContent>
                 <MarkdownEditor draft={composer}
                                 id="reply-body"

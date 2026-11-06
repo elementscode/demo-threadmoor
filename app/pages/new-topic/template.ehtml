@@ -148,7 +148,7 @@ function onSubmit(form: Form) {
                    attrs={{ id: "title", maxlength: MAX_TITLE }} />
           </Field>
 
-          <Card>
+          <Card size="sm">
             <CardContent>
               <MarkdownEditor draft={form}
                               id="body"

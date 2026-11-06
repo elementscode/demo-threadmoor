@@ -4,6 +4,7 @@ import { Chrome } from "#app/shared/services/forum";
 import { signout } from "#app/shared/services/auth";
 import { Avatar } from "@elements/ui/avatar";
 import { Button } from "@elements/ui/button";
+import { Toaster } from "@elements/ui/toast";
 
 function onSignout() {
   signout();
@@ -73,5 +74,7 @@ function onSignout() {
         </nav>
       </div>
     </footer>
+
+    <Toaster />
   </div>
 </Layout>
