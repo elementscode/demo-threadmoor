@@ -4,6 +4,11 @@ import { Chrome, Category } from "#app/shared/services/forum";
 import { plainText } from "#app/shared/services/markdown";
 import { Layout } from "#app/shared/templates/layout";
 import { MarkdownEditor, Draft } from "#app/shared/templates/markdown-editor";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent } from "@elements/ui/card";
+import { Field, FieldLabel, FieldContent, FieldTitle, FieldDescription, FieldSet, FieldLegend } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
+import { RadioGroup, RadioGroupItem } from "@elements/ui/radio-group";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 
 export const MAX_TITLE = 140;
@@ -120,46 +125,43 @@ function onSubmit(form: Form) {
             <h1>Start a conversation</h1>
           </div>
 
-          <fieldset class="stack is-sm" style="border: 0; padding: 0; margin: 0">
-            <legend style="padding: 0; margin-bottom: var(--space-2)"><strong>Category</strong></legend>
-            <div class="new-topic-cats">
-              <button e:for={c of chrome.categories}
-                      type="button"
-                      class={["new-topic-cat", form.categoryId === c.id && "is-active"]}
-                      aria-pressed={form.categoryId === c.id ? "true" : "false"}
-                      style={`--cat-h: ${c.hue}`}
-                      onclick={() => form.categoryId = c.id}>
-                <strong><span class="cat-dot"></span>{c.name}</strong>
-                <span class="line-clamp-2">{c.description}</span>
-              </button>
-            </div>
-          </fieldset>
+          <FieldSet>
+            <FieldLegend variant="label">Category</FieldLegend>
+            <RadioGroup value={form.categoryId} class="new-topic-cats" attrs={{ "aria-label": "Category" }}>
+              <FieldLabel e:for={c of chrome.categories}>
+                <Field orientation="horizontal" reserveError={false}>
+                  <RadioGroupItem value={c.id} />
+                  <FieldContent>
+                    <FieldTitle><span class="cat-dot" style={`--cat-h: ${c.hue}`}></span>{c.name}</FieldTitle>
+                    <FieldDescription class="line-clamp-2">{c.description}</FieldDescription>
+                  </FieldContent>
+                </Field>
+              </FieldLabel>
+            </RadioGroup>
+          </FieldSet>
 
-          <div class="field new-topic-title">
-            <label for="title">Title</label>
-            <input id="title"
-                   value={form.title}
-                   class={[form.titleError && "is-error"]}
-                   maxlength={MAX_TITLE}
+          <Field label="Title" error={form.titleError}>
+            <Input value={form.title}
+                   size="lg"
                    placeholder="What are you making, or what's got you stuck?"
-                   required>
-            <p e:if={form.titleError} class="field-error" style="color: var(--danger-ink); margin: 0; font-size: var(--text-xs)">{form.titleError}</p>
-          </div>
+                   required
+                   attrs={{ id: "title", maxlength: MAX_TITLE }} />
+          </Field>
 
-          <div class="card">
-            <div class="card-body">
+          <Card>
+            <CardContent>
               <MarkdownEditor draft={form}
                               id="body"
                               label="Post"
                               tall={true}
                               placeholder="Describe the project or the problem. Add photos: a picture of the joint beats a paragraph about it.">
                 <div class="row" style="gap: var(--space-2)">
-                  <a class="button is-ghost" href="/">Cancel</a>
-                  <button type="submit" class={["is-primary", form.busy && "is-loading"]} disabled={form.uploading}>Post topic</button>
+                  <Button href="/" variant="ghost">Cancel</Button>
+                  <Button type="submit" variant="primary" loading={form.busy} disabled={form.uploading}>Post topic</Button>
                 </div>
               </MarkdownEditor>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </form>
       </div>
     </Layout>
