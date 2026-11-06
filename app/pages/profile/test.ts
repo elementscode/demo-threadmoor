@@ -18,4 +18,13 @@ test("profile", () => {
     assert(html.includes("Ann&#39;s bowl") || html.includes("Ann's bowl"), "topic");
     assert(html.includes("Great vise."), "reply");
   });
+
+  test("a new member's lists show their empty states", () => {
+    let ann = makeUser("ann");
+
+    let html = (route({ params: { handle: handleOf(ann) }, query: {} } as any, {} as any) as any).toHtml();
+
+    assert(html.includes("No topics yet."), "topics");
+    assert(html.includes("No replies yet."), "replies");
+  });
 });

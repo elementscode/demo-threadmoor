@@ -56,4 +56,11 @@ test("topics", () => {
     assert(html.includes("Popular build"));
     assert(html.includes("Most liked"));
   });
+
+  test("the list sits in the panel of the tab being shown", () => {
+    let html = render({ tab: "unanswered" });
+
+    assert(/role=['"]tabpanel['"][^>]*data-value=['"]unanswered['"]/.test(html), "panel");
+    assert(html.includes("Waiting for a first reply"));
+  });
 });

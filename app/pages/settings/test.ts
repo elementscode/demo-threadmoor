@@ -43,4 +43,12 @@ test("settings", () => {
     unfollow(topicId);
     assert(sql(`select 1 from follows where userId = ${ann}`).empty());
   });
+
+  test("with no follows the list shows its empty state", () => {
+    signInAs(makeUser("ann"));
+
+    let html = (route({ params: {}, query: {} } as any, {} as any) as any).toHtml();
+
+    assert(html.includes("following any topics yet"));
+  });
 });
