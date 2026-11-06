@@ -2,7 +2,7 @@ import "./style.css";
 import { redirect } from "@elements/app";
 import { Chrome } from "#app/shared/services/forum";
 import { signout } from "#app/shared/services/auth";
-import { Avatar } from "#app/shared/templates/avatar";
+import { Avatar } from "@elements/ui/avatar";
 
 function onSignout() {
   signout();
@@ -39,7 +39,7 @@ function onSignout() {
             <span class="tm-label">New topic</span>
           </a>
           <a class="tm-me" href={`/u/${chrome.me!.handle}`}>
-            <Avatar src={chrome.me!.avatar} name={chrome.me!.handle} size="sm" />
+            <Avatar src={chrome.me!.avatar ?? ""} alt={chrome.me!.handle} size="sm" />
             <span class="tm-me-name">{chrome.me!.handle}</span>
           </a>
           <button class="is-ghost is-sm" aria-label="Sign out" onclick={() => onSignout()}>

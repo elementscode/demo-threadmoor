@@ -3,7 +3,7 @@ import { Chrome } from "#app/shared/services/forum";
 import { TopicRow } from "#app/shared/services/topics";
 import { timeAgo } from "#app/shared/services/format";
 import { Layout } from "#app/shared/templates/layout";
-import { Avatar } from "#app/shared/templates/avatar";
+import { Avatar } from "@elements/ui/avatar";
 import { TopicItem } from "#app/shared/templates/topic-item";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 
@@ -45,7 +45,7 @@ export interface RecentReply {
       <div class="page-shell profile-shell">
         <div class="stack is-xl">
           <div class="profile-head">
-            <Avatar src={profile.avatar} name={profile.handle} size="xl" />
+            <Avatar src={profile.avatar ?? ""} alt={profile.handle} size="lg" class="avatar-xl" />
             <div class="stack is-sm" style="flex: 1">
               <div class="row" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-3)">
                 <h1>{profile.displayName || profile.handle}</h1>

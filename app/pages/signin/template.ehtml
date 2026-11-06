@@ -3,7 +3,7 @@ import { redirect } from "@elements/app";
 import { Chrome } from "#app/shared/services/forum";
 import { signin } from "#app/shared/services/auth";
 import { Layout } from "#app/shared/templates/layout";
-import { Avatar } from "#app/shared/templates/avatar";
+import { Avatar } from "@elements/ui/avatar";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 
 export const DEMO_PASSWORD = "sawdust123";
@@ -110,7 +110,7 @@ function onDemoClick(form: SigninForm, demo: DemoLogin, next: string) {
               <ul class="demo-logins">
                 <li e:for={d of demos}>
                   <button type="button" class="demo-login" onclick={() => onDemoClick(form, d, next)}>
-                    <Avatar src={d.avatar} name={d.handle} size="sm" />
+                    <Avatar src={d.avatar ?? ""} alt={d.handle} size="sm" />
                     <span class="demo-login-name">
                       <strong>{d.displayName}</strong>
                       <span>{d.email}</span>

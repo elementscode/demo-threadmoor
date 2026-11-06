@@ -4,7 +4,7 @@ import { Chrome, Me } from "#app/shared/services/forum";
 import { renderMarkdown, plainText } from "#app/shared/services/markdown";
 import { timeAgo, fullDate, plural } from "#app/shared/services/format";
 import { Layout } from "#app/shared/templates/layout";
-import { Avatar } from "#app/shared/templates/avatar";
+import { Avatar } from "@elements/ui/avatar";
 import { MarkdownEditor, Draft } from "#app/shared/templates/markdown-editor";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 import {
@@ -204,12 +204,12 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
         +new Date(post.createdAt) > +loadedAt && post.userId !== me?.id && "is-arrived",
       ]}>
     <a class="post-side" href={`/u/${post.authorHandle}`} tabindex={-1} aria-hidden="true">
-      <Avatar src={post.authorAvatar} name={post.authorHandle} size="lg" />
+      <Avatar src={post.authorAvatar ?? ""} alt={post.authorHandle} size="lg" lazy />
     </a>
 
     <div class="post-main">
       <div class="post-head">
-        <span class="avatar-inline"><Avatar src={post.authorAvatar} name={post.authorHandle} size="xs" /></span>
+        <span class="avatar-inline"><Avatar src={post.authorAvatar ?? ""} alt={post.authorHandle} size="sm" lazy /></span>
         <a class="post-author" href={`/u/${post.authorHandle}`}>{post.authorName}</a>
         <span class="post-handle">@{post.authorHandle}</span>
         <span e:if={post.authorIsModerator} class="pill is-accent">Moderator</span>

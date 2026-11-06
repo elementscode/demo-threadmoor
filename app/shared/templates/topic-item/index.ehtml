@@ -1,11 +1,11 @@
 import "./style.css";
 import { TopicRow } from "#app/shared/services/topics";
 import { timeAgo } from "#app/shared/services/format";
-import { Avatar } from "#app/shared/templates/avatar";
+import { Avatar } from "@elements/ui/avatar";
 
 <TopicItem (topic: TopicRow, showCategory: boolean = true, fresh: boolean = false)>
   <li class={["topic-item", fresh && "is-new"]}>
-    <Avatar src={topic.authorAvatar} name={topic.authorHandle} />
+    <Avatar src={topic.authorAvatar ?? ""} alt={topic.authorHandle} lazy />
 
     <div class="topic-main">
       <a class="topic-title" href={`/t/${topic.id}`}>

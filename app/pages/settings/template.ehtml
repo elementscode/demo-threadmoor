@@ -5,7 +5,7 @@ import { storeImage, mediaUrl } from "#app/shared/services/media";
 import { sendDigest } from "#app/shared/services/digest";
 import { timeAgo } from "#app/shared/services/format";
 import { Layout } from "#app/shared/templates/layout";
-import { Avatar } from "#app/shared/templates/avatar";
+import { Avatar } from "@elements/ui/avatar";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 
 export const MAX_BIO = 600;
@@ -176,7 +176,7 @@ function onDigest(state: State) {
             <div class="card-head"><h2>Profile</h2></div>
             <div class="card-body stack is-md">
               <div class="settings-avatar row">
-                <Avatar src={state.avatar} name={chrome.me?.handle ?? "?"} size="xl" />
+                <Avatar src={state.avatar ?? ""} alt={chrome.me?.handle ?? ""} size="lg" class="avatar-xl" />
                 <div>
                   <label class={["button is-sm file-button", state.uploading && "is-loading"]}>
                     {state.avatar ? "Change avatar" : "Upload avatar"}
