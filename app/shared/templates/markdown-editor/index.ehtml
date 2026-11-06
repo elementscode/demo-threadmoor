@@ -2,6 +2,9 @@ import "./style.css";
 import { File, raw } from "@elements/app";
 import { renderMarkdown } from "#app/shared/services/markdown";
 import { uploadImages } from "#app/shared/services/media";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@elements/ui/tabs";
+import { Textarea } from "@elements/ui/textarea";
+import { Alert } from "@elements/ui/alert";
 
 export interface Draft {
   body: string;
@@ -42,25 +45,30 @@ function onPickImages(e: Event, draft: Draft) {
   placeholder: string = "Markdown works here.",
   tall: boolean = false,
 )>
-  <div class={["md-editor stack is-sm", tall && "is-tall"]}>
+  <Tabs value={draft.preview ? "preview" : "write"}
+        activation="manual"
+        class={["md-editor stack is-sm", tall && "is-tall"].filter(Boolean).join(" ")}
+        onValueChange={(v) => draft.preview = v === "preview"}>
     <div class="md-editor-head row">
       <label for={id}><strong>{label}</strong></label>
-      <div class="tab-list">
-        <button type="button" class={["tab", !draft.preview && "is-active"]} onclick={() => draft.preview = false}>Write</button>
-        <button type="button" class={["tab", draft.preview && "is-active"]} onclick={() => draft.preview = true}>Preview</button>
-      </div>
+      <TabsList label={`${label} mode`}>
+        <TabsTrigger value="write">Write</TabsTrigger>
+        <TabsTrigger value="preview">Preview</TabsTrigger>
+      </TabsList>
     </div>
 
     <slot name="above"></slot>
 
-    <div e:if={draft.preview} class="md-editor-preview prose">
-      {raw(draft.body.trim() ? renderMarkdown(draft.body) : "<p>Nothing to preview yet.</p>")}
-    </div>
-    <textarea e:else id={id} value={draft.body} placeholder={placeholder}></textarea>
+    <TabsContent value="write">
+      <Textarea value={draft.body} rows={tall ? 10 : 6} placeholder={placeholder} attrs={{ id }} />
+    </TabsContent>
+    <TabsContent value="preview">
+      <div class="md-editor-preview prose">
+        {raw(draft.body.trim() ? renderMarkdown(draft.body) : "<p>Nothing to preview yet.</p>")}
+      </div>
+    </TabsContent>
 
-    <div e:if={draft.error} class="callout is-danger" role="alert">
-      <div class="callout-body">{draft.error}</div>
-    </div>
+    <Alert e:if={draft.error} variant="danger" description={draft.error} />
 
     <div class="md-editor-foot row">
       <div class="row" style="gap: var(--space-3)">
@@ -75,5 +83,5 @@ function onPickImages(e: Event, draft: Draft) {
       </div>
       <slot/>
     </div>
-  </div>
+  </Tabs>
 </MarkdownEditor>
