@@ -1,5 +1,6 @@
 import "./style.css";
 import { Chrome } from "#app/shared/services/forum";
+import { Badge } from "@elements/ui/badge";
 import { TopicRow } from "#app/shared/services/topics";
 import { timeAgo } from "#app/shared/services/format";
 import { Layout } from "#app/shared/templates/layout";
@@ -53,7 +54,7 @@ export interface RecentReply {
               </div>
               <div class="profile-meta cluster is-sm">
                 <span>@{profile.handle}</span>
-                <span e:if={profile.isModerator} class="pill is-accent">Moderator</span>
+                <Badge e:if={profile.isModerator} variant="accent">Moderator</Badge>
                 <span e:if={profile.location}>{profile.location}</span>
                 <span>Joined {profile.createdAt.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
               </div>

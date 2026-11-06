@@ -27,10 +27,6 @@
   max-width: 38rem;
 }
 
-.topics-tabs .tab {
-  text-decoration: none;
-}
-
 .topics-section-label {
   margin: 0;
   color: var(--ink-dim);
@@ -40,32 +36,11 @@
   text-transform: uppercase;
 }
 
-.topics-empty {
-  padding: var(--space-10) var(--space-6);
-  text-align: center;
-  color: var(--ink-dim);
-}
-
 .topics-more {
   padding: var(--space-5);
   text-align: center;
   color: var(--ink-dim);
   font-size: var(--text-sm);
-}
-
-.topics-live {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--ink-dim);
-  font-size: var(--text-xs);
-}
-
-.topics-live .pill-dot {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: var(--radius-full);
-  background: var(--success);
 }
 
 .cat-cards {

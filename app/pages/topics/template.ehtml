@@ -1,5 +1,9 @@
 import "./style.css";
 import { LiveView } from "@elements/app";
+import { Badge } from "@elements/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@elements/ui/tabs";
+import { Empty } from "@elements/ui/empty";
+import { Button } from "@elements/ui/button";
 import { Chrome, Category } from "#app/shared/services/forum";
 import { TopicRow } from "#app/shared/services/topics";
 import { Layout } from "#app/shared/templates/layout";
@@ -48,6 +52,18 @@ function onSentinelInsert(el: HTMLElement, live: LiveView<TopicRow>) {
   observer.observe(el);
 }
 
+function emptyText(tab: Tab): string {
+  if (tab === "unanswered") {
+    return "Every topic here has a reply. Nice work, everyone.";
+  }
+
+  if (tab === "top") {
+    return "Nothing new this month yet.";
+  }
+
+  return "No topics yet. Start the first one.";
+}
+
 function pageTitle(category: Category | null, tab: Tab): string {
   let label = tab === "top" ? "Top this month" : tab === "unanswered" ? "Unanswered" : "Latest";
 
@@ -85,56 +101,52 @@ function pageTitle(category: Category | null, tab: Tab): string {
                 <p class="lede">Show your work, compare tools, argue about finishes, and get unstuck.</p>
               </div>
 
-              <a e:if={chrome.me}
-                 class="button is-primary"
-                 href={category ? `/new?category=${category.slug}` : "/new"}>
+              <Button e:if={chrome.me}
+                      variant="primary"
+                      href={category ? `/new?category=${category.slug}` : "/new"}>
                 New topic
-              </a>
+              </Button>
             </div>
 
-            <div class="stack is-md">
-              <div class="row is-end topics-tabs-row" style="justify-content: space-between">
-                <nav class="topics-tabs tab-list" style="flex: 1">
-                  <a class={["tab", tab === "latest" && "is-active"]} href={tabHref(category, "latest")}>Latest</a>
-                  <a class={["tab", tab === "top" && "is-active"]} href={tabHref(category, "top")}>Top this month</a>
-                  <a class={["tab", tab === "unanswered" && "is-active"]} href={tabHref(category, "unanswered")}>Unanswered</a>
-                </nav>
-              </div>
+            <Tabs value={tab} activation="manual">
+              <TabsList label="Topic lists">
+                <TabsTrigger value="latest" href={tabHref(category, "latest")}>Latest</TabsTrigger>
+                <TabsTrigger value="top" href={tabHref(category, "top")}>Top this month</TabsTrigger>
+                <TabsTrigger value="unanswered" href={tabHref(category, "unanswered")}>Unanswered</TabsTrigger>
+              </TabsList>
 
-              <div e:if={pinnedRows(pinned).length > 0} class="stack is-sm">
-                <p class="topics-section-label">Pinned</p>
-                <ul class="topic-list">
-                  <TopicItem e:for={t of pinnedRows(pinned)} topic={t} showCategory={!category} />
-                </ul>
-              </div>
-
-              <div class="stack is-sm">
-                <div class="row" style="justify-content: space-between">
-                  <p class="topics-section-label">
-                    {tab === "top" ? "Most liked, started in the last 30 days" : tab === "unanswered" ? "Waiting for a first reply" : "Recently active"}
-                  </p>
-                  <span e:if={live} class="topics-live"><span class="pill-dot"></span>live</span>
+              <TabsContent value={tab} class="stack is-md">
+                <div e:if={pinnedRows(pinned).length > 0} class="stack is-sm">
+                  <p class="topics-section-label">Pinned</p>
+                  <ul class="topic-list">
+                    <TopicItem e:for={t of pinnedRows(pinned)} topic={t} showCategory={!category} />
+                  </ul>
                 </div>
 
-                <ul e:if={rows(tab, live, top).length > 0} class="topic-list">
-                  <TopicItem e:for={t of rows(tab, live, top)}
-                             topic={t}
-                             showCategory={!category}
-                             fresh={+new Date(t.lastPostAt) > +loadedAt} />
-                  <li e:if={live?.hasMore}
-                      class="topics-more"
-                      oninsert={(e) => onSentinelInsert(e.target as HTMLElement, live!)}>
-                    Loading more topics…
-                  </li>
-                </ul>
+                <div class="stack is-sm">
+                  <div class="row" style="justify-content: space-between">
+                    <p class="topics-section-label">
+                      {tab === "top" ? "Most liked, started in the last 30 days" : tab === "unanswered" ? "Waiting for a first reply" : "Recently active"}
+                    </p>
+                    <Badge e:if={live} variant="success" dot>live</Badge>
+                  </div>
 
-                <div e:else class="topic-list topics-empty">
-                  <p e:if={tab === "unanswered"}>Every topic here has a reply. Nice work, everyone.</p>
-                  <p e:elseif={tab === "top"}>Nothing new this month yet.</p>
-                  <p e:else>No topics yet. Start the first one.</p>
+                  <ul e:if={rows(tab, live, top).length > 0} class="topic-list">
+                    <TopicItem e:for={t of rows(tab, live, top)}
+                               topic={t}
+                               showCategory={!category}
+                               fresh={+new Date(t.lastPostAt) > +loadedAt} />
+                    <li e:if={live?.hasMore}
+                        class="topics-more"
+                        oninsert={(e) => onSentinelInsert(e.target as HTMLElement, live!)}>
+                      Loading more topics…
+                    </li>
+                  </ul>
+
+                  <Empty e:else variant="outline" description={emptyText(tab)} />
                 </div>
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
           </div>
 
           <aside class="topics-aside stack is-sm">

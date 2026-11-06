@@ -1,5 +1,6 @@
 import "./style.css";
 import { redirect } from "@elements/app";
+import { Badge } from "@elements/ui/badge";
 import { Chrome } from "#app/shared/services/forum";
 import { signin } from "#app/shared/services/auth";
 import { Layout } from "#app/shared/templates/layout";
@@ -115,7 +116,7 @@ function onDemoClick(form: SigninForm, demo: DemoLogin, next: string) {
                       <strong>{d.displayName}</strong>
                       <span>{d.email}</span>
                     </span>
-                    <span e:if={d.isModerator} class="pill is-accent">Moderator</span>
+                    <Badge e:if={d.isModerator} variant="accent">Moderator</Badge>
                   </button>
                 </li>
               </ul>

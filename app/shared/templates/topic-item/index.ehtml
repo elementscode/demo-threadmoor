@@ -1,5 +1,6 @@
 import "./style.css";
 import { TopicRow } from "#app/shared/services/topics";
+import { Badge } from "@elements/ui/badge";
 import { timeAgo } from "#app/shared/services/format";
 import { Avatar } from "@elements/ui/avatar";
 
@@ -32,7 +33,7 @@ import { Avatar } from "@elements/ui/avatar";
           last reply <a href={`/u/${topic.lastHandle}`}>{topic.lastHandle}</a> {timeAgo(topic.lastPostAt)}
         </span>
         <span e:else>{timeAgo(topic.createdAt)}</span>
-        <span e:if={topic.solved} class="pill is-success">Solved</span>
+        <Badge e:if={topic.solved} variant="success">Solved</Badge>
       </div>
     </div>
 

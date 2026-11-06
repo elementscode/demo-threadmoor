@@ -1,5 +1,6 @@
 import "./style.css";
 import { LiveView, raw, redirect } from "@elements/app";
+import { Badge } from "@elements/ui/badge";
 import { Chrome, Me } from "#app/shared/services/forum";
 import { renderMarkdown, plainText } from "#app/shared/services/markdown";
 import { timeAgo, fullDate, plural } from "#app/shared/services/format";
@@ -212,8 +213,8 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
         <span class="avatar-inline"><Avatar src={post.authorAvatar ?? ""} alt={post.authorHandle} size="sm" lazy /></span>
         <a class="post-author" href={`/u/${post.authorHandle}`}>{post.authorName}</a>
         <span class="post-handle">@{post.authorHandle}</span>
-        <span e:if={post.authorIsModerator} class="pill is-accent">Moderator</span>
-        <span e:if={post.isSolution} class="pill is-success">Solution</span>
+        <Badge e:if={post.authorIsModerator} variant="accent">Moderator</Badge>
+        <Badge e:if={post.isSolution} variant="success">Solution</Badge>
         <a class="post-time" href={`#post-${post.id}`} title={fullDate(post.createdAt)}>{timeAgo(post.createdAt)}</a>
       </div>
 
@@ -298,8 +299,8 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
                 <span class="cat-dot"></span>
                 {topic.categoryName}
               </a>
-              <span e:if={topic.pinned} class="pill">Pinned</span>
-              <span e:if={topic.locked} class="pill is-warning">Locked</span>
+              <Badge e:if={topic.pinned} variant="secondary">Pinned</Badge>
+              <Badge e:if={topic.locked} variant="warning">Locked</Badge>
             </div>
 
             <h1>{topic.title}</h1>
