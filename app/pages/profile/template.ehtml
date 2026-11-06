@@ -48,7 +48,7 @@ export interface RecentReply {
       <div class="page-shell profile-shell">
         <div class="stack is-xl">
           <div class="profile-head">
-            <Avatar src={profile.avatar ?? ""} alt={profile.handle} size="lg" class="avatar-xl" />
+            <Avatar src={profile.avatar ?? ""} alt={profile.handle} attrs={{ style: "--avatar-size: 6rem" }} />
             <div class="stack is-sm" style="flex: 1">
               <div class="row" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-3)">
                 <h1>{profile.displayName || profile.handle}</h1>

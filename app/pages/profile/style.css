@@ -117,8 +117,3 @@ li + li > .reply-item {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
-/* The package Avatar stops at lg; the profile head wants a portrait. */
-.avatar-xl {
-  --avatar-size: 6rem;
-}

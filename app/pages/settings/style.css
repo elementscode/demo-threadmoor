@@ -69,8 +69,3 @@
   opacity: 0;
   cursor: pointer;
 }
-
-/* The package Avatar stops at lg; the profile head wants a portrait. */
-.avatar-xl {
-  --avatar-size: 6rem;
-}

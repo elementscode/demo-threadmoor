@@ -188,7 +188,7 @@ function onDigest(state: State) {
           <Card title="Profile" level={2} size="sm">
             <CardContent class="stack is-md">
               <div class="settings-avatar row">
-                <Avatar src={state.avatar ?? ""} alt={chrome.me?.handle ?? ""} size="lg" class="avatar-xl" />
+                <Avatar src={state.avatar ?? ""} alt={chrome.me?.handle ?? ""} attrs={{ style: "--avatar-size: 6rem" }} />
                 <div>
                   <label class={["button is-sm file-button", state.uploading && "is-loading"]}>
                     {state.avatar ? "Change avatar" : "Upload avatar"}
