@@ -5,6 +5,11 @@ import { Chrome } from "#app/shared/services/forum";
 import { signin } from "#app/shared/services/auth";
 import { Layout } from "#app/shared/templates/layout";
 import { Avatar } from "@elements/ui/avatar";
+import { Alert } from "@elements/ui/alert";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent } from "@elements/ui/card";
+import { Field } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 
 export const DEMO_PASSWORD = "sawdust123";
@@ -58,53 +63,41 @@ function onDemoClick(form: SigninForm, demo: DemoLogin, next: string) {
     <Layout chrome={chrome}>
       <div class="page-shell">
         <div class={["auth", demos.length === 0 && "is-single"]}>
-          <div class="card">
-            <div class="card-body">
+          <Card size="sm">
+            <CardContent>
               <form class="stack is-md" onsubmit={() => onSubmit(form, next)}>
                 <div class="stack is-xs">
                   <h1>Sign in</h1>
                   <p class="auth-alt">Welcome back to the shop.</p>
                 </div>
 
-                <div e:if={form.error} class="callout is-danger" role="alert">
-                  <div class="callout-body">{form.error}</div>
-                </div>
+                <Alert e:if={form.error} variant="danger" description={form.error} />
 
-                <div class="field">
-                  <label for="login">Email or handle</label>
-                  <input id="login"
-                         name="login"
-                         type="text"
+                <Field label="Email or handle" reserveError={false}>
+                  <Input name="login"
                          value={form.login}
-                         autocomplete="username"
-                         autocapitalize="none"
-                         spellcheck={false}
                          placeholder="you@example.com"
-                         required>
-                </div>
+                         required
+                         attrs={{ id: "login", autocomplete: "username", autocapitalize: "none", spellcheck: "false" }} />
+                </Field>
 
-                <div class="field">
-                  <label for="password">Password</label>
-                  <input id="password"
-                         name="password"
+                <Field label="Password" reserveError={false}>
+                  <Input name="password"
                          type="password"
                          value={form.password}
-                         autocomplete="current-password"
-                         required>
-                </div>
+                         required
+                         attrs={{ id: "password", autocomplete: "current-password" }} />
+                </Field>
 
-                <button type="submit" class={["is-primary is-block", form.busy && "is-loading"]}>Sign in</button>
+                <Button type="submit" variant="primary" block loading={form.busy}>Sign in</Button>
 
                 <p class="auth-alt">New here? <a href="/signup">Create an account</a></p>
               </form>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div e:if={demos.length > 0} class="card">
-            <div class="card-head">
-              <h2>Demo logins</h2>
-            </div>
-            <div class="card-body stack is-sm">
+          <Card e:if={demos.length > 0} title="Demo logins" level={2} size="sm">
+            <CardContent class="stack is-sm">
               <p class="auth-alt">
                 Every seeded account uses the password <code class="demo-password">{DEMO_PASSWORD}</code>. Click one to sign in.
               </p>
@@ -120,8 +113,8 @@ function onDemoClick(form: SigninForm, demo: DemoLogin, next: string) {
                   </button>
                 </li>
               </ul>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Layout>

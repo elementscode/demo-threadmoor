@@ -6,6 +6,8 @@ import { timeAgo } from "#app/shared/services/format";
 import { Layout } from "#app/shared/templates/layout";
 import { Avatar } from "@elements/ui/avatar";
 import { TopicItem } from "#app/shared/templates/topic-item";
+import { Button } from "@elements/ui/button";
+import { Empty } from "@elements/ui/empty";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 
 export interface Profile {
@@ -50,7 +52,7 @@ export interface RecentReply {
             <div class="stack is-sm" style="flex: 1">
               <div class="row" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-3)">
                 <h1>{profile.displayName || profile.handle}</h1>
-                <a e:if={chrome.me?.id === profile.id} class="button is-sm" href="/settings">Edit profile</a>
+                <Button e:if={chrome.me?.id === profile.id} size="sm" href="/settings">Edit profile</Button>
               </div>
               <div class="profile-meta cluster is-sm">
                 <span>@{profile.handle}</span>
@@ -74,7 +76,7 @@ export interface RecentReply {
             <ul e:if={topics.length > 0} class="topic-list">
               <TopicItem e:for={t of topics} topic={t} />
             </ul>
-            <p e:else class="profile-empty">No topics yet.</p>
+            <Empty e:else variant="outline" description="No topics yet." />
           </div>
 
           <div class="stack is-sm">
@@ -88,7 +90,7 @@ export interface RecentReply {
                 </a>
               </li>
             </ul>
-            <p e:else class="profile-empty">No replies yet.</p>
+            <Empty e:else variant="outline" description="No replies yet." />
           </div>
         </div>
       </div>

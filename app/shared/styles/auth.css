@@ -22,12 +22,6 @@
   font-size: var(--text-sm);
 }
 
-.auth .field-error {
-  margin: 0;
-  color: var(--danger-ink);
-  font-size: var(--text-xs);
-}
-
 .demo-logins {
   margin: 0;
   padding: 0;
