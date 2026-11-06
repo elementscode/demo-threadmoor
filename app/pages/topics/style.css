@@ -17,7 +17,7 @@
 
 .topics-head h1 {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: var(--text-4xl);
   letter-spacing: -0.02em;
 }
@@ -57,7 +57,7 @@
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--rule);
   border-left: 3px solid oklch(0.62 0.12 var(--cat-h, 60));
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   background: var(--bg);
   color: var(--ink);
   text-decoration: none;

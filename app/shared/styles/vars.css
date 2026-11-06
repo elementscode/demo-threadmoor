@@ -1,18 +1,5 @@
 @layer tokens {
   :root {
-    /* Warm neutrals: sawdust and shop paper rather than the default slate. */
-    --neutral-50: oklch(0.985 0.006 75);
-    --neutral-100: oklch(0.962 0.010 75);
-    --neutral-200: oklch(0.918 0.014 72);
-    --neutral-300: oklch(0.858 0.018 70);
-    --neutral-400: oklch(0.738 0.022 68);
-    --neutral-500: oklch(0.618 0.024 65);
-    --neutral-600: oklch(0.500 0.024 62);
-    --neutral-700: oklch(0.385 0.022 60);
-    --neutral-800: oklch(0.285 0.020 58);
-    --neutral-900: oklch(0.215 0.018 55);
-    --neutral-950: oklch(0.140 0.014 55);
-
     /* Brand: an oiled-cherry amber. */
     --brand-50: oklch(0.975 0.014 55);
     --brand-100: oklch(0.945 0.032 55);
@@ -28,12 +15,10 @@
     --accent: var(--brand-600);
     --accent-deep: var(--brand-700);
     --accent-soft: var(--brand-50);
-    --accent-ink: #ffffff;
+    --accent-ink: var(--white);
     --accent-edge: var(--brand-200);
     --link-c: 0.120;
     --link-h: 45;
-
-    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   }
 
   @media (prefers-color-scheme: dark) {

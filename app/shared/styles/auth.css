@@ -12,7 +12,7 @@
 
 .auth h1 {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: var(--text-3xl);
   letter-spacing: -0.015em;
 }
@@ -36,7 +36,7 @@
   height: auto;
   padding: var(--space-2) var(--space-3);
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-item);
   background: transparent;
   box-shadow: none;
   text-align: left;

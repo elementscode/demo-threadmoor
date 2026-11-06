@@ -6,7 +6,7 @@
 
 .new-topic-shell h1 {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: var(--text-4xl);
   letter-spacing: -0.02em;
 }

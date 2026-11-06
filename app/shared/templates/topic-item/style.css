@@ -6,7 +6,7 @@
   list-style: none;
   background: var(--bg);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-surface, var(--radius-lg));
+  border-radius: var(--radius-surface);
   overflow: hidden;
 }
 
