@@ -123,14 +123,7 @@
     padding: var(--space-3) var(--space-4);
   }
 
-  .cat-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-weight: var(--weight-medium);
-}
-
-.tm-user {
+  .tm-user {
     margin-left: auto;
   }
 

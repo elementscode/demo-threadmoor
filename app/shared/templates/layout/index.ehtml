@@ -3,6 +3,7 @@ import { redirect } from "@elements/app";
 import { Chrome } from "#app/shared/services/forum";
 import { signout } from "#app/shared/services/auth";
 import { Avatar } from "@elements/ui/avatar";
+import { Button } from "@elements/ui/button";
 
 function onSignout() {
   signout();
@@ -32,27 +33,27 @@ function onSignout() {
         </nav>
 
         <div e:if={chrome.me} class="tm-user row">
-          <a class="button is-primary is-sm" href="/new" aria-label="New topic">
+          <Button href="/new" variant="primary" size="sm" label="New topic">
             <svg class="tm-icon" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
               <path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
             <span class="tm-label">New topic</span>
-          </a>
+          </Button>
           <a class="tm-me" href={`/u/${chrome.me!.handle}`}>
             <Avatar src={chrome.me!.avatar ?? ""} alt={chrome.me!.handle} size="sm" />
             <span class="tm-me-name">{chrome.me!.handle}</span>
           </a>
-          <button class="is-ghost is-sm" aria-label="Sign out" onclick={() => onSignout()}>
+          <Button variant="ghost" size="sm" label="Sign out" onclick={() => onSignout()}>
             <svg class="tm-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
               <path d="M6 2.5H3.5v11H6M10.5 5l3 3-3 3M13.5 8H6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span class="tm-label">Sign out</span>
-          </button>
+          </Button>
         </div>
 
         <div e:else class="tm-user row">
-          <a class="button is-ghost is-sm" href="/signin">Sign in</a>
-          <a class="button is-primary is-sm" href="/signup">Join</a>
+          <Button href="/signin" variant="ghost" size="sm">Sign in</Button>
+          <Button href="/signup" variant="primary" size="sm">Join</Button>
         </div>
       </div>
     </header>
