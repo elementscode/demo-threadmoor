@@ -51,19 +51,16 @@
   flex: none;
 }
 
-.topic-tools select {
-  width: auto;
-}
-
 .topic-solved {
   display: block;
   text-decoration: none;
   color: inherit;
 }
 
-.topic-solved .callout-body p {
-  margin: var(--space-1) 0 0;
-  color: var(--ink-soft);
+.topic-signin {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .posts {

@@ -7,6 +7,11 @@ import { timeAgo, fullDate, plural } from "#app/shared/services/format";
 import { Layout } from "#app/shared/templates/layout";
 import { Avatar } from "@elements/ui/avatar";
 import { MarkdownEditor, Draft } from "#app/shared/templates/markdown-editor";
+import { Button } from "@elements/ui/button";
+import { Toggle } from "@elements/ui/toggle";
+import { Alert, AlertDescription } from "@elements/ui/alert";
+import { Card, CardContent } from "@elements/ui/card";
+import { NativeSelect } from "@elements/ui/native-select";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 import {
   PostRow,
@@ -227,40 +232,45 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
       <div e:else class="prose post-body">{raw(renderMarkdown(post.body))}</div>
 
       <div class="post-actions cluster">
-        <button class={["is-ghost is-sm", myLike(likes, post.id, me) && "is-liked"]}
+        <Toggle size="sm"
+                pressed={!!myLike(likes, post.id, me)}
                 disabled={me?.id === post.userId}
-                title={me?.id === post.userId ? "Your post" : "Like"}
-                aria-pressed={myLike(likes, post.id, me) ? "true" : "false"}
-                onclick={() => onLike(likes, post, me)}>
+                class={myLike(likes, post.id, me) ? "is-liked" : ""}
+                attrs={{ title: me?.id === post.userId ? "Your post" : "Like" }}
+                onPressedChange={(_, details) => { details.cancel(); onLike(likes, post, me); }}>
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M8 14s-5.5-3.3-5.5-7.4A3 3 0 0 1 8 4.4a3 3 0 0 1 5.5 2.2C13.5 10.7 8 14 8 14z"
                   fill={myLike(likes, post.id, me) ? "currentColor" : "none"}
                   stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
           </svg>
           <span class="like-count">{likesFor(likes, post.id) > 0 ? likesFor(likes, post.id) : "Like"}</span>
-        </button>
+        </Toggle>
 
-        <button e:if={me && !post.hidden && (!topic.locked || me!.isModerator)}
-                class="is-ghost is-sm"
+        <Button e:if={me && !post.hidden && (!topic.locked || me!.isModerator)}
+                variant="ghost"
+                size="sm"
                 onclick={() => onQuote(composer, post)}>
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M3 9.5c0-3 1.5-5 4-5.5v1.6C5.7 6 5 7 5 8h2v4H3zm6 0c0-3 1.5-5 4-5.5v1.6c-1.3.4-2 1.4-2 2.4h2v4H9z" fill="currentColor"/>
           </svg>
           Quote
-        </button>
+        </Button>
 
-        <button e:if={canSolve(topic, post, me)}
-                class={["is-ghost is-sm", post.isSolution && "is-solution-on"]}
+        <Button e:if={canSolve(topic, post, me)}
+                variant="ghost"
+                size="sm"
+                class={post.isSolution ? "is-solution-on" : ""}
                 onclick={() => onToggleSolution(posts, post, state)}>
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
             <circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.4"/>
             <path d="m5.2 8.2 2 2 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           {post.isSolution ? "Unmark solution" : "Mark as solution"}
-        </button>
+        </Button>
 
-        <button e:if={me?.isModerator}
-                class="is-ghost is-sm"
+        <Button e:if={me?.isModerator}
+                variant="ghost"
+                size="sm"
                 onclick={() => onToggleHidden(posts, post, state)}>
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" fill="none" stroke="currentColor" stroke-width="1.4"/>
@@ -268,7 +278,7 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
             <path e:if={!post.hidden} d="m2.5 13.5 11-11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
           {post.hidden ? "Unhide" : "Hide"}
-        </button>
+        </Button>
       </div>
     </div>
   </li>
@@ -316,35 +326,38 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
 
           <div e:if={chrome.me} class="topic-tools row">
             <div class="row" style="gap: var(--space-3)">
-              <button class={[state.following ? "is-primary" : "", "is-sm"]}
-                      aria-pressed={state.following ? "true" : "false"}
-                      onclick={() => onFollow(state, topic.id)}>
+              <Toggle variant="outline"
+                      size="sm"
+                      pressed={state.following}
+                      onPressedChange={(_, details) => { details.cancel(); onFollow(state, topic.id); }}>
                 <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
                   <path d="M8 1.8a4.2 4.2 0 0 0-4.2 4.2v2.6L2.5 11h11l-1.3-2.4V6A4.2 4.2 0 0 0 8 1.8zM6.3 12.5a1.8 1.8 0 0 0 3.4 0z" fill="currentColor"/>
                 </svg>
                 {state.following ? "Following" : "Follow"}
-              </button>
+              </Toggle>
               <p class="hint">{state.following ? "New replies come in your daily digest." : "Follow to get new replies in a daily digest."}</p>
             </div>
 
             <div e:if={chrome.me!.isModerator} class="cluster is-xs">
-              <button class="is-sm" onclick={() => onPin(topic)}>{topic.pinned ? "Unpin" : "Pin"}</button>
-              <button class="is-sm" onclick={() => onLock(topic)}>{topic.locked ? "Unlock" : "Lock"}</button>
-              <select class="is-sm" value={state.moveTo} onchange={() => onMove(topic, state)} aria-label="Move to category">
+              <Button size="sm" onclick={() => onPin(topic)}>{topic.pinned ? "Unpin" : "Pin"}</Button>
+              <Button size="sm" onclick={() => onLock(topic)}>{topic.locked ? "Unlock" : "Lock"}</Button>
+              <NativeSelect size="sm"
+                            value={state.moveTo}
+                            onchange={() => onMove(topic, state)}
+                            attrs={{ "aria-label": "Move to category" }}>
                 <option e:for={c of chrome.categories} value={c.id}>{c.id === topic.categoryId ? `In ${c.name}` : `Move to ${c.name}`}</option>
-              </select>
+              </NativeSelect>
             </div>
           </div>
 
-          <div e:if={state.error} class="callout is-danger" role="alert">
-            <div class="callout-body">{state.error}</div>
-          </div>
+          <Alert e:if={state.error} variant="danger" description={state.error} />
 
           <a e:if={currentSolution(posts, solution)}
-             class="topic-solved callout is-success"
+             class="topic-solved"
              href={`#post-${currentSolution(posts, solution)!.id}`}>
-            <div class="callout-title">Solved by @{currentSolution(posts, solution)!.handle}</div>
-            <div class="callout-body"><p class="line-clamp-2">{currentSolution(posts, solution)!.excerpt}</p></div>
+            <Alert variant="success" role="none" title={`Solved by @${currentSolution(posts, solution)!.handle}`}>
+              <AlertDescription><p class="line-clamp-2">{currentSolution(posts, solution)!.excerpt}</p></AlertDescription>
+            </Alert>
           </a>
 
           <ul class="posts">
@@ -364,31 +377,34 @@ function canSolve(topic: TopicDetail, post: PostRow, me: Me | null): boolean {
             </li>
           </ul>
 
-          <div e:if={!chrome.me} class="card">
-            <div class="card-body row" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-3)">
+          <Card e:if={!chrome.me}>
+            <CardContent class="row topic-signin">
               <span>Sign in to reply, like posts and follow this topic.</span>
-              <a class="button is-primary" href={`/signin?next=/t/${topic.id}`}>Sign in to reply</a>
-            </div>
-          </div>
+              <Button variant="primary" href={`/signin?next=/t/${topic.id}`}>Sign in to reply</Button>
+            </CardContent>
+          </Card>
 
-          <div e:elseif={topic.locked && !chrome.me!.isModerator} class="callout is-warning">
-            <div class="callout-title">This topic is locked</div>
-            <div class="callout-body">A moderator closed it to new replies.</div>
-          </div>
+          <Alert e:elseif={topic.locked && !chrome.me!.isModerator}
+                 variant="warning"
+                 role="none"
+                 title="This topic is locked"
+                 description="A moderator closed it to new replies." />
 
-          <form e:else id="reply" class="card composer" onsubmit={() => onReply(composer, posts, chrome.me!, state)}>
-            <div class="card-body">
-              <MarkdownEditor draft={composer}
-                              id="reply-body"
-                              label="Reply"
-                              placeholder="Share what worked, ask a follow-up, post a photo. Markdown works.">
-                <div slot="above" e:if={composer.quote} class="composer-quoting row">
-                  <span class="line-clamp-1">Quoting @{composer.quote!.authorHandle}: <em>{composer.quote!.body.slice(0, 120)}</em></span>
-                  <button type="button" class="is-ghost is-sm" onclick={() => composer.quote = null}>Remove</button>
-                </div>
-                <button type="submit" class="is-primary" disabled={composer.uploading}>Post reply</button>
-              </MarkdownEditor>
-            </div>
+          <form e:else id="reply" class="composer" onsubmit={() => onReply(composer, posts, chrome.me!, state)}>
+            <Card>
+              <CardContent>
+                <MarkdownEditor draft={composer}
+                                id="reply-body"
+                                label="Reply"
+                                placeholder="Share what worked, ask a follow-up, post a photo. Markdown works.">
+                  <div slot="above" e:if={composer.quote} class="composer-quoting row">
+                    <span class="line-clamp-1">Quoting @{composer.quote!.authorHandle}: <em>{composer.quote!.body.slice(0, 120)}</em></span>
+                    <Button variant="ghost" size="sm" onclick={() => composer.quote = null}>Remove</Button>
+                  </div>
+                  <Button type="submit" variant="primary" disabled={composer.uploading}>Post reply</Button>
+                </MarkdownEditor>
+              </CardContent>
+            </Card>
           </form>
         </div>
       </div>
