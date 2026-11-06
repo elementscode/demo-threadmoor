@@ -47,7 +47,7 @@ function onPickImages(e: Event, draft: Draft) {
 )>
   <Tabs value={draft.preview ? "preview" : "write"}
         activation="manual"
-        class={["md-editor stack is-sm", tall && "is-tall"].filter(Boolean).join(" ")}
+        class={tall ? "md-editor stack is-sm is-tall" : "md-editor stack is-sm"}
         onValueChange={(v) => draft.preview = v === "preview"}>
     <div class="md-editor-head row">
       <label for={id}><strong>{label}</strong></label>
