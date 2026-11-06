@@ -6,6 +6,8 @@
 
 Topics with photos, quoted replies, likes, marked solutions, live topic lists, a daily digest and moderator tools.
 
+Threadmoor uses the `editorial` theme from @elements/ui.
+
 [Run this app on your machine](https://elements.dev/demos/01a0f3f6-d2c9-742c-b9f5-f4a6f72cf35a). Use this demo as inspiration, or as the starting point for your own app. Your agent creates a new app with this one as the scaffold, and you prompt it to add whatever features you want.
 
 ## How it's built
